@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Mission Design Game · NASA Space Apps 2026</title>
+<meta name="description" content="Thiết kế một sứ mệnh không gian — và hiểu ra cái giá của từng quyết định.">
+<meta name="theme-color" content="#0a0705">
+<link rel="icon" type="image/png" href="/assets/nasa-logo-96.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/story.css">
+<style>
+  /* riêng cho khung khởi động — dùng lại biến trong tokens.css */
+  body{
+    background: var(--ui-bg); color: var(--ui-text);
+    font-family: var(--st-font); font-size: var(--st-size-base);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, #ffffff22 50%, transparent 50%),
+      radial-gradient(1px 1px at 68% 14%, #ffffff1a 50%, transparent 50%),
+      radial-gradient(1px 1px at 84% 62%, #ffffff20 50%, transparent 50%),
+      radial-gradient(1px 1px at 34% 78%, #ffffff16 50%, transparent 50%),
+      radial-gradient(1px 1px at 52% 46%, #ffffff12 50%, transparent 50%);
+  }
+  .boot{
+    position:relative; z-index:1; height:100dvh;
+    display:grid; place-items:center; text-align:center; padding:24px;
+  }
+  .boot .lbl{
+    font-family:var(--st-font-mono); font-size:.7rem; letter-spacing:.24em;
+    text-transform:uppercase; color:var(--ui-accent); margin-bottom:18px;
+  }
+  .boot h1{font-size:clamp(1.4rem,4vw,2rem); font-weight:600; color:var(--ui-text-hi); margin-bottom:12px; line-height:1.25}
+  .boot p{color:var(--ui-text-dim); font-size:.9rem; max-width:46ch; margin:0 auto 28px; line-height:1.65}
+  .boot button{
+    font-family:var(--st-font-mono); font-size:.74rem; letter-spacing:.14em; text-transform:uppercase;
+    padding:13px 30px; border-radius:999px; cursor:pointer;
+    border:1px solid #2f6f9e; background:#123a5e; color:#d9ecff;
+    transition:all .18s;
+  }
+  .boot button:hover{background:#17496f; color:#fff}
+</style>
+</head>
+<body>
+
+<div class="boot" id="boot">
+  <div>
+    <div class="lbl">NASA Space Apps Challenge 2026</div>
+    <h1>Space Mission Design Game</h1>
+    <p>Thiết kế một sứ mệnh không gian — và hiểu ra cái giá của từng quyết định.</p>
+    <button id="start">Bắt đầu</button>
+  </div>
+</div>
+
+<script type="module">
+  import { startStory } from './story.js';
+
+  const boot = document.getElementById('boot');
+  const btn  = document.getElementById('start');
+
+  // Chạy thẳng màn mở đầu khi bấm nút. Giữ màn boot phía sau làm nền
+  // cho tới khi phần chơi chính (engine + dashboard) được nối vào.
+  btn.addEventListener('click', () => {
+    boot.style.display = 'none';
+    startStory({
+      onFinish: ({ playerName, crew, playerRole }) => {
+        // TODO: chuyển sang màn thiết kế sứ mệnh (đang chờ engine của Ngọc)
+        console.log('story done', { playerName, crew, playerRole });
+        boot.style.display = 'grid';
+        boot.querySelector('h1').textContent = `Chào ${playerName}.`;
+        boot.querySelector('p').textContent =
+          'Phần thiết kế sứ mệnh đang được dựng. Màn chơi tiếp theo sẽ nối vào đây.';
+        btn.textContent = 'Xem lại mở đầu';
+      },
+    });
+  });
+</script>
+</body>
+</html>
