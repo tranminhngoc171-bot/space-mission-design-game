@@ -31,3 +31,8 @@ Format:
 **Context:** Makes the launcher choice feel real instead of nominal.
 **Decision:** The engine multiplies total mass by 1.15 before comparing to launcher capacity.
 **Consequence:** Some designs that "just fit" will be rejected — that is the lesson, and the debrief must show the arithmetic.
+
+## 2026-11-15 — Plain HTML + CSS + JS modules (no framework, no build)
+**Context:** Two devs, two agents, 24 hours. Needed a stack where two people can edit in parallel without install or build conflicts, and where a judge opens a URL and it just runs.
+**Decision:** Plain HTML/CSS/ES-modules in `src/`, SVG for graphics, deployed straight to GitHub Pages. React/Next/Vue/Phaser/Godot all explicitly rejected with reasons in `docs/08`.
+**Consequence:** No component framework, so `ui.js` must be written as explicit DOM updates. Cost to reverse ≈ 2 h (engine and data are framework-independent), which is why the risk is acceptable.
