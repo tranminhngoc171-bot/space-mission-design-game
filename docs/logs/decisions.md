@@ -12,6 +12,11 @@ Format:
 
 ---
 
+## 2026-11-15 — Trace every design number to a NASA source
+**Context:** Global judging rewards work grounded in agency material; judges also punish invented numbers.
+**Decision:** `docs/08-RESEARCH-SOURCES.md` maps each NASA resource to its role in our build, and §8 explicitly lists what we do *not* model (no GMAT propagation, no link budget, no thermal). The submission will cite: the four-segment systems-engineering PDF, Goddard MDL, JPL CML, Webb telescope game, NSSDC Mars Fact Sheet.
+**Consequence:** We must keep the stated simplifications honest in the demo — no claiming "high-fidelity" anywhere. If we later run GMAT, only one orbit gets validated and it is labelled as such.
+
 ## 2026-11-15 — No 3D, no realtime multiplayer
 **Context:** 24 hours left, nothing built. 3D needs 10–16 h before any graded feature exists; realtime multiplayer dies publicly if a socket misbehaves during a 5-minute demo.
 **Decision:** 2D "Mission Control" UI. Multiplayer = hot-seat 4 roles + shareable design URL.

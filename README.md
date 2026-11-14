@@ -53,12 +53,28 @@ assets/images/      screenshots, diagrams, submission assets
 notes/              scratch research, links, NASA data notes
 ```
 
+## Built on NASA's own mission-design method
+
+We did not invent the workflow — we playtested NASA's. Three agency sources shape the design, and the submission cites them:
+
+| NASA source | What we took from it |
+|---|---|
+| [Design and Develop Science Missions](https://www.nasa.gov/wp-content/uploads/2025/04/250323-design-and-develop-science-mission.pdf) | The **four mission segments** (launch / space / ground / user) — the check that told us our six resources were the right six |
+| [Mission Design Lab](https://etd.gsfc.nasa.gov/capabilities/integrated-design-center/mission-design-lab/) (Goddard) | Our screen order: Office Hours → Concept Development → Trade Studies → Point Design |
+| [Concept Maturity Levels](https://dataverse.jpl.nasa.gov/dataset.xhtml?persistentId=hdl:2014/44299) (JPL) | Why our three scenarios differ: difficulty is *less freedom*, not bigger numbers |
+
+Benchmarked against NASA's own [Webb telescope design game](https://science.nasa.gov/mission/webb/game-build-it-yourself/) — we take its ending (name what the player really designed) and skip its cutscene.
+
+Full analysis, including what we deliberately do **not** model: `docs/08-RESEARCH-SOURCES.md`.
+
+
 ## Start here
 
 1. `docs/00-CHALLENGE-BRIEF.md` — what is actually graded
 2. `docs/04-PLAN-24H.md` — who builds what, hour by hour
 3. `data/*.json` — the numbers (instruments, orbits, launchers, events, scenarios)
 4. `docs/03-SCORING.md` — how a mission is scored
+5. `docs/08-RESEARCH-SOURCES.md` — which NASA sources we used and what we deliberately left out
 
 ## How we work
 
