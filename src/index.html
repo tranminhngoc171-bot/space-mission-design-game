@@ -145,6 +145,11 @@
   gear.addEventListener('click', () => { playClick(); openSettings(); });
 
   btn.addEventListener('click', async () => {
+    /* Chặn bấm hai lần. Không có cờ này, double-click tạo ra hai màn
+       truyện chồng nhau và hai listener bàn phím cùng chạy. */
+    if (btn.dataset.started === '1') return;
+    btn.dataset.started = '1';
+
     playClick();
     boot.style.display = 'none';
     await playIntro();
@@ -163,6 +168,8 @@
         if (title) title.removeAttribute('data-i18n');
         btn.textContent = 'Xem lại mở đầu';
         btn.removeAttribute('data-i18n');
+        /* mở khoá để chơi lại được */
+        delete btn.dataset.started;
       },
     });
   });
