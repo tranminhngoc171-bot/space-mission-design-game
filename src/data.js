@@ -10,6 +10,13 @@
 
 const FILES = ['scenarios', 'instruments', 'orbits', 'launch_vehicles', 'events'];
 
+/* Two layouts are supported on purpose:
+     1. inside the team repo, src/ sits one level below data/  → ../data/
+     2. deployed to bersious.io.vn/nasa, the page is the root  → data/
+   Do not collapse this to a single path; that silently breaks one environment.
+   See docs/10-DEPLOY-TARGET.md §3. */
+const BASES = ['../data/', 'data/'];
+
 export const DB = {
   scenarios: null,
   instruments: null,
@@ -31,17 +38,41 @@ let loaded = false;
 export async function loadData() {
   if (loaded) return DB;
 
-  const results = await Promise.all(
-    FILES.map(async (name) => {
-      const res = await fetch(`../data/${name}.json`, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`Cannot load data/${name}.json (HTTP ${res.status})`);
-      return [name, await res.json()];
-    })
-  );
+  /* Try each base until one works. Whichever answers first is the one we keep,
+     so the same file works in the repo and on the deployed site. */
+  let base = null;
+  let payload = null;
+  let lastError = null;
 
-  for (const [name, json] of results) {
+  for (const candidate of BASES) {
+    try {
+      const results = await Promise.all(
+        FILES.map(async (name) => {
+          const res = await fetch(`${candidate}${name}.json`, { cache: 'no-store' });
+          if (!res.ok) throw new Error(`${candidate}${name}.json → HTTP ${res.status}`);
+          return [name, await res.json()];
+        })
+      );
+      base = candidate;
+      payload = results;
+      break;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  if (!payload) {
+    throw new Error(
+      `Cannot load balance data from any of: ${BASES.join(', ')}. ` +
+      `Last error: ${lastError?.message ?? 'unknown'}. ` +
+      `If you opened this file directly (file://), run a local server instead — see docs/08 §6.`
+    );
+  }
+
+  for (const [name, json] of payload) {
     DB[name] = json;
   }
+  DB._base = base;
 
   for (const it of DB.instruments.instruments) INDEX.instrument[it.id] = it;
   for (const it of DB.orbits.orbits) INDEX.orbit[it.id] = it;
