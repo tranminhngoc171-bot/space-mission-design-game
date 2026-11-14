@@ -1,0 +1,13 @@
+{
+  "name": "space-mission-design-game",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Design, manage and simulate a complete space mission.",
+  "scripts": {
+    "build:data": "python scripts/build_data.py",
+    "check:data": "python scripts/validate_data.py",
+    "test": "node scripts/smoke_engine.mjs",
+    "serve": "python -m http.server 5173 --directory src"
+  }
+}

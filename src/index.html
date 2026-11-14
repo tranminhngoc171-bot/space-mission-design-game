@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mission Control — Space Mission Design</title>
+<link rel="stylesheet" href="css/mission.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-name">MISSION CONTROL</span>
+    <span class="brand-sub" data-ui="build.version">v0.1</span>
+  </div>
+  <div class="topbar-right">
+    <label class="field-inline">
+      <span>KỊCH BẢN</span>
+      <select data-ui="select.scenario"></select>
+    </label>
+    <button class="btn btn-ghost" data-ui="btn.reset">Đặt lại</button>
+  </div>
+</header>
+
+<main class="stage">
+
+  <!-- ================= BRIEFING ================= -->
+  <section class="screen" data-screen="briefing">
+    <div class="panel panel-wide">
+      <p class="eyebrow" data-ui="scenario.difficulty"></p>
+      <h1 data-ui="scenario.name"></h1>
+      <p class="lede" data-ui="scenario.story"></p>
+
+      <div class="spec-row">
+        <div class="spec"><span class="spec-key">NGÂN SÁCH</span><span class="spec-val num" data-ui="scenario.budget"></span></div>
+        <div class="spec"><span class="spec-key">THỜI GIAN</span><span class="spec-val num" data-ui="scenario.duration"></span></div>
+        <div class="spec"><span class="spec-key">MỤC TIÊU</span><span class="spec-val num" data-ui="scenario.objcount"></span></div>
+      </div>
+
+      <h2 class="h2">Mục tiêu sứ mệnh</h2>
+      <table class="obj-table">
+        <thead><tr><th>Mục tiêu</th><th class="ta-r">Yêu cầu</th><th class="ta-r">Trọng số</th></tr></thead>
+        <tbody data-ui="scenario.objectives"></tbody>
+      </table>
+
+      <p class="hintline" data-ui="scenario.hint"></p>
+      <button class="btn btn-primary" data-ui="btn.start">Bắt đầu thiết kế</button>
+    </div>
+  </section>
+
+  <!-- ================= DESIGN ================= -->
+  <section class="screen" data-screen="design" hidden>
+    <div class="design-cols">
+
+      <div class="design-main">
+        <div class="panel">
+          <h2 class="h2">1 · Khung tàu</h2>
+          <div class="opt-grid" data-ui="opt.bus"></div>
+        </div>
+        <div class="panel">
+          <h2 class="h2">2 · Nguồn điện &amp; pin</h2>
+          <div class="opt-grid" data-ui="opt.power"></div>
+          <div class="opt-grid" data-ui="opt.battery"></div>
+        </div>
+        <div class="panel">
+          <h2 class="h2">3 · Thiết bị khoa học <span class="slot-count num" data-ui="payload.count"></span></h2>
+          <div class="opt-grid opt-grid-dense" data-ui="opt.instruments"></div>
+        </div>
+        <div class="panel">
+          <h2 class="h2">4 · Quỹ đạo</h2>
+          <div class="opt-grid" data-ui="opt.orbit"></div>
+        </div>
+        <div class="panel">
+          <h2 class="h2">5 · Tên lửa</h2>
+          <div class="opt-grid" data-ui="opt.launcher"></div>
+        </div>
+      </div>
+
+      <aside class="design-side">
+        <div class="panel panel-sticky">
+          <h2 class="h2">Tài nguyên</h2>
+          <div class="res-list" data-ui="res.list"></div>
+          <div class="gate-list" data-ui="checks.list"></div>
+          <button class="btn btn-primary btn-full" data-ui="btn.simulate">MÔ PHỎNG SỨ MỆNH</button>
+          <p class="micro" data-ui="design.warning"></p>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <!-- ================= DEBRIEF ================= -->
+  <section class="screen" data-screen="debrief" hidden>
+    <div class="debrief-head">
+      <div class="score-block">
+        <span class="score-num num" data-ui="debrief.score"></span>
+        <span class="score-band" data-ui="debrief.band"></span>
+      </div>
+      <div class="score-parts" data-ui="debrief.parts"></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="h2">Kiểm tra tương thích</h2>
+      <ul class="check-list" data-ui="debrief.checks"></ul>
+    </div>
+
+    <div class="panel">
+      <h2 class="h2">Mục tiêu</h2>
+      <ul class="check-list" data-ui="debrief.objectives"></ul>
+    </div>
+
+    <div class="panel">
+      <h2 class="h2">Sự kiện đã xảy ra</h2>
+      <ul class="event-list" data-ui="debrief.events"></ul>
+    </div>
+
+    <div class="panel">
+      <h2 class="h2">Phân tích</h2>
+      <ul class="analysis-list" data-ui="debrief.analysis"></ul>
+    </div>
+
+    <div class="debrief-actions">
+      <button class="btn" data-ui="btn.back">Sửa thiết kế</button>
+      <button class="btn btn-ghost" data-ui="btn.share">Sao chép liên kết thiết kế</button>
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="ui.js"></script>
+</body>
+</html>
