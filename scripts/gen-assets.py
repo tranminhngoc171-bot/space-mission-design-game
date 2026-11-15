@@ -30,6 +30,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / 'src' / 'assets' / 'gen'
+# Sprite có nền trong suốt (char-*, icon-sprite) ghi ra thư mục riêng: nếu để
+# chung gen/ thì process-assets.py quét gen/icon-*.png và ghi đè icon trong
+# suốt bằng bản nền tối đục của pipeline icon cũ.
+SPRITE_DIR = ROOT / 'src' / 'assets' / 'gen-sprites'
 
 API_BASE = 'https://api.vilao.ai/v1'
 MODEL = 'gemini-3.1-flash-lite-image'
@@ -94,6 +98,92 @@ STYLE_FACE = (
 )
 
 STYLE = STYLE_CLEAN
+
+# ------------------------------------------- bộ art màn căn cứ thiết kế lại
+# Bộ này theo Art Direction mới, không theo NASA concept art book cũ: tranh
+# phẳng, nét sạch, đọc được ở cỡ nhỏ, bảng màu khoá cứng 5 màu. Dùng chung
+# cho sprite nhân vật, icon vật phẩm và tranh popup để ba nhóm không lệch
+# giọng với nhau.
+STYLE_HARD = (
+    'Grounded Hard Sci-Fi 2D Illustration, clean crisp lineart, '
+    'painterly atmospheric lighting kept subtle and controlled, '
+    '60 Seconds cutaway-base clarity with The Martian NASA engineering '
+    'aesthetic, readable silhouette at thumbnail size, '
+    'palette restricted to martian rust orange #C84B31, spaceship steel grey '
+    '#1E242B, NASA equipment white #E2E8F0, warning amber #F59E0B, '
+    'data-screen cyan #38BDF8'
+)
+
+# Icon vật phẩm: khối style chép từ gen-icon-sprite.py, giữ nguyên cách xin
+# nền xám phẳng để bước hậu kỳ tách alpha. Hậu kỳ của bộ này nằm trong
+# process-assets.py (process_icon_sprite), không dùng process_icon vì hàm
+# đó đệm nền tối đục và vẽ khung chữ nhật quanh canvas.
+ICON_KEY_BG = (
+    'background is a single flat uniform mid grey #7A7A7A, '
+    'no gradient, no vignette, no floor, no shadow cast on the background'
+)
+
+STYLE_ICON_SPRITE = (
+    STYLE_HARD + ', '
+    'flat cel shaded colour fills with at most two shading tones per face, '
+    'bold uniform dark ink outline running cleanly around the whole '
+    'silhouette and along every major form break, crisp readable shapes, '
+    'isolated object on transparent background, centered, '
+    'single object only, fully inside frame with empty margin on all sides, '
+    'no text, no watermark, no border, no frame, no ground shadow, '
+    'no background scenery, no people'
+)
+
+# Sprite nhân vật: KHÔNG được mang câu "no people, no faces, no hands" của
+# STYLE_CLEAN, nếu không model trả về khung cảnh trống. Nền vẫn phải phẳng
+# một màu để hậu kỳ tách alpha, và phải là ảnh toàn thân đứng trong khung
+# dọc, cùng tỉ lệ cho cả ba tư thế.
+STYLE_CHAR = (
+    STYLE_HARD + ', '
+    'full body character sprite of one single astronaut, '
+    'head to boots completely inside the frame, standing vertically, '
+    'both boots and their soles fully visible with clear empty grey space '
+    'below the feet, generous empty margin above the head, '
+    'nothing floating in the empty space beside the body, '
+    'no stray marks, no props floating in the air, '
+    'background is a single flat uniform mid grey #7A7A7A, '
+    'no gradient, no vignette, no floor plane, no horizon, no scenery, '
+    'no props behind the figure, no cast shadow on the background, '
+    'clean crisp silhouette, no text, no watermark, no border, no frame, '
+    'no extra limbs, no second person'
+)
+
+# Tranh popup: cảnh nội thất 16:9, có người vận hành nhưng mặt khuất hoặc
+# chỉ thấy bóng lưng, nên không dùng STYLE_CLEAN khoá con người.
+STYLE_POPUP = (
+    STYLE_HARD + ', '
+    'cinematic 16:9 interior scene, wide readable composition that stays '
+    'clear behind a popup panel, deep charcoal shadows with warm rust bounce '
+    'light, no text, no letters, no numbers, no logo, no watermark, no border, '
+    'no frame'
+)
+
+# Mô tả nhân vật dùng CHUNG nguyên văn cho cả ba tư thế. Đây là điều quan
+# trọng nhất của bộ sprite: model không nhận ảnh tham chiếu, nên chỉ có một
+# khối mô tả cố định, dài và cụ thể mới giữ ba tư thế là cùng một người,
+# cùng bộ đồ, cùng tỉ lệ. Sửa khối này là phải sinh lại cả ba.
+CHAR_LOOK = (
+    'the same recurring character in all poses: a stocky astronaut in his '
+    'mid thirties, 1.8 metres tall, broad shoulders, short cropped dark brown '
+    'buzz cut hair, square jaw with light stubble, warm medium brown skin, '
+    'thick straight eyebrows, a small pale scar above the left eyebrow, '
+    'identical face and identical head shape in every pose, '
+    'wearing the same light duty Mars habitat coverall, not a heavy EVA '
+    'pressure suit: a soft slate grey-blue one piece utility coverall, the '
+    'trousers exactly the same slate grey-blue as the jacket sleeves, '
+    'with a pale NASA equipment white chest panel, a diagonal front zip, a '
+    'rust orange shoulder yoke and rust orange knee patches, sleeves rolled to '
+    'the elbow showing bare forearms, a small amber rectangle patch badge on '
+    'the right chest, a thin cyan status strip on the left wrist cuff, a fabric '
+    'tool belt with two pouches, scuffed grey utility boots with pale soles, '
+    'same costume, same colours, same body proportions in every pose, '
+    'do not change the costume design between poses'
+)
 
 # ------------------------------------------------- màn mở đầu dạng truyện tranh
 # Mười hai khung của đoạn phim mở đầu kể bằng tranh, không lời thoại.
@@ -556,27 +646,57 @@ ASSETS = {
         'kind': 'comic',
         'style': COMIC_CREW,
     },
+    # Khung 9 kể khoảnh khắc tàn nhẫn nhất: tàu bỏ đi, còn đúng MỘT người
+    # nằm sấp dưới đất. Prompt cũ hỏng hai chỗ: model vẽ bốn phi hành gia
+    # đứng hai bên khung (không ai bị bỏ lại), và vẽ tên lửa đang HẠ cánh
+    # (chân đáp bung ba phía, lửa đập tung đất ngay dưới chân tàu). Phải
+    # khoá cứng ba ý: đúng một người, người đó nằm, tàu đã lên cao với
+    # chân đáp thu vào thân.
+    # Lần 3: hai lần trước model vẫn vẽ giàn chân đáp xòe quanh đế. Nguyên
+    # nhân: tả tàu đang "climbing away" thì model tưởng còn ở trạng thái hạ
+    # cánh. Đổi cách tả sang cấu hình bay: thân là ống trơn, đế là đĩa động
+    # cơ phẳng, và nói rõ nét viền thân phải liền một đường từ mũi xuống đế.
     'screen-09': {
         'prompt': (
-            'low angle looking up, a Mars ascent vehicle firing its engines, '
-            'blazing hot red exhaust tearing through the dust storm cloud as '
-            'it lifts off the surface, smoke and dust boiling away on both '
-            'sides of the frame, bright engine glare, vehicle silhouette '
-            'against the storm ceiling'
+            'low angle looking straight up at a Mars ascent vehicle already '
+            'far above the surface, high in flight and climbing fast, a wide '
+            'band of empty dark air between the ship and the ground below, '
+            'the ship is a smooth slender white cylinder with a tapered nose '
+            'in clean launch configuration, its silhouette is one unbroken '
+            'straight outline from nose to base that is never wider than the '
+            'hull, flat circular engine plate at the base holding four '
+            'engine bells, no landing gear, no legs, no struts, no fins, no '
+            'outriggers, nothing protruding from the hull at all, four '
+            'bright engine plumes blasting straight down from the engine '
+            'plate into a huge billowing column of dust and smoke far below '
+            'the ship, the rocket small in the upper third of the frame '
+            'against a dark storm ceiling, torn clouds and debris whipping '
+            'sideways, in the FOREGROUND at the very bottom corner of the '
+            'frame ONE single astronaut lying face down on the red dirt, '
+            'alone, small and helpless, arms sprawled, suit dust covered, '
+            'no other people anywhere in the image, absolutely only one '
+            'human figure in the entire scene'
         ),
-        'note': 'khung 9: tàu khai hỏa cất cánh xé mây bão',
+        'note': 'khung 9: tàu đã bay cao, một mình nhân vật nằm sấp dưới đất',
         'kind': 'comic',
         'style': COMIC_CREW,
     },
+    # Khung 10: bản cũ vẽ mũi tàu quay VỀ phía Sao Hỏa, tức là đang lao vào
+    # hành tinh, ngược hẳn câu chuyện. Prompt mới khoá hướng: mũi tàu chỉ
+    # ra ngoài vũ trụ, đuôi lửa nằm giữa tàu và Sao Hỏa.
     'screen-10': {
         'prompt': (
             'wide comic panel of deep black star filled space, planet Mars '
-            'glowing red orange in the centre of frame with visible cratered '
-            'surface and a thin glowing atmosphere rim, a tiny spacecraft high '
-            'in the upper left trailing a bright engine plume, arcing away '
-            'from orbit into the distance, heavy black ink outlines on the '
-            'planet limb and the ship, halftone dot shading in the shadow '
-            'side of the planet, drawn on paper like a printed comic page'
+            'large and glowing red orange in the lower right of the frame '
+            'with visible cratered surface, Valles Marineris canyon scar and '
+            'a thin blue glowing atmosphere rim, a small spacecraft in the '
+            'UPPER LEFT flying AWAY from the planet toward the top left '
+            'corner, its nose pointed AWAY from Mars into empty space, a long '
+            'bright red orange engine plume trailing BEHIND it back toward '
+            'the planet, the ship clearly departing and growing distant, '
+            'heavy black ink outlines on the planet limb and the ship, '
+            'halftone dot shading in the shadow side of the planet, drawn on '
+            'paper like a printed comic page'
         ),
         'note': 'khung 10: tàu nhỏ bay khỏi Sao Hỏa',
         'kind': 'comic',
@@ -606,6 +726,271 @@ ASSETS = {
         'note': 'khung 12: trạm Hab mái vòm sau bão, cảnh trống',
         'kind': 'comic',
         'style': COMIC_EMPTY,
+    },
+
+    # ---------- bộ art màn căn cứ thiết kế lại ----------
+    # Ba sprite nhân vật dùng chung CHAR_LOOK nguyên văn. Chỉ phần tư thế
+    # đổi, phần con người và bộ đồ giữ y nguyên từng chữ, để model không
+    # vẽ ra ba người khác nhau.
+
+    'char-healthy': {
+        'prompt': (
+            CHAR_LOOK + ', '
+            'pose: standing upright and confident, weight even on both boots, '
+            'shoulders square, chin level, calm focused expression looking '
+            'slightly to his left toward a piece of equipment, '
+            'turned three quarters to the viewer so the body faces the right '
+            'side of frame, '
+            'his left hand holds a pale metal clipboard with a paper checklist '
+            'up at chest height, held close against his body, '
+            'his right arm bent with the hand resting on his hip, elbow out, '
+            'nothing floating in the air beside him, '
+            'healthy and alert, upright posture, alert eyes, clean unworn '
+            'coverall, lit from the left by cool white equipment light with a '
+            'warm amber rim on the right shoulder'
+        ),
+        'note': 'nhân vật: khoẻ mạnh, đứng cầm bảng kiểm tra',
+        'kind': 'char',
+        'style': STYLE_CHAR,
+    },
+    'char-tired': {
+        'prompt': (
+            CHAR_LOOK + ', '
+            'pose: SITTING DOWN on the metal floor, definitely not standing. '
+            'His hips and seat are on the ground, both knees are drawn up in '
+            'front of his chest with the boots flat on the floor close to his '
+            'body, both forearms hanging forward to rest on top of his knees, '
+            'the whole body folded into a compact huddled seated shape that is '
+            'clearly shorter than a standing figure, '
+            'head hanging low between his shoulders, chin dropped onto his '
+            'chest, eyes looking down at the floor, shoulders slumped and '
+            'rolled forward, spine curved over, '
+            'exhausted hungry expression, sunken tired eyes, hollow cheeks, '
+            'dull grey shadowed skin, lips pressed thin, '
+            'the coverall creased and dusty, one boot lace loose, '
+            'no crate, no chair, no stool, no box to sit on, nothing behind '
+            'him, he sits directly on the empty floor, '
+            'seen three quarters from the front, '
+            'dim cold blue fill light from the left, empty hands'
+        ),
+        'note': 'nhân vật: mệt mỏi, ngồi bó gối',
+        'kind': 'char',
+        'style': STYLE_CHAR,
+    },
+    'char-cold': {
+        'prompt': (
+            CHAR_LOOK + ', '
+            'pose: standing but hunched against the cold, knees slightly bent, '
+            'both arms folded tight across his chest with each hand tucked '
+            'under the opposite arm, shoulders drawn up near the ears, '
+            'head pulled down into his collar, shivering, '
+            'wearing the same grey-blue coverall with an extra quilted amber '
+            'thermal over-jacket open over it, padded rust orange lining at '
+            'the collar and cuffs, hood down behind the neck, '
+            'a thin plume of visible breath vapour leaving his mouth, '
+            'pale bluish skin, tight pained expression, jaw clenched, '
+            'full body standing sprite with the same head to boot scale as '
+            'the other poses, seen three quarters from the front, '
+            'cold cyan light from the left, faint warm amber from the right'
+        ),
+        'note': 'nhân vật: co ro vì lạnh, mặc áo giữ nhiệt',
+        'kind': 'char',
+        'style': STYLE_CHAR,
+    },
+
+    # ---------- sáu icon vật phẩm mới, sprite trong suốt ----------
+
+    'icon-ration-nasa': {
+        'prompt': (
+            'a single NASA crew ration pouch standing upright, '
+            'a sealed vacuum foil bag of dull brushed silver metallised film '
+            'with fine crinkle creases catching light, '
+            'a wide printed label band across the lower half of the pouch in '
+            'NASA equipment white with a rust orange stripe, '
+            'a short clear drinking tube with a bite valve clipped to the top '
+            'right corner of the pouch, one small amber sealed port, '
+            'a folded tear notch at the upper left corner, '
+            'slightly squashed in the middle like a partly used bag, '
+            'clean crisp outlines on every fold, '
+            'cool white key light from upper left, warm rust rim light on the '
+            'right edge, whole pouch and tube inside the frame'
+        ),
+        'note': 'icon: gói khẩu phần NASA',
+        'kind': 'icon-sprite',
+        'style': STYLE_ICON_SPRITE,
+        'key_bg': True,
+    },
+    'icon-water-recycled': {
+        'prompt': (
+            'a single reusable water bottle made of brushed stainless steel, '
+            'tall cylinder with a slightly tapered neck and a screw cap, '
+            'a clear vertical sight window strip down the front of the body, '
+            'thin engraved volumetric graduation marks along that window in '
+            'even steps, a pale NASA equipment white silicone grip band around '
+            'the middle, a small rust orange cap tether loop, '
+            'a few condensation droplets on the steel, '
+            'slight dent on the lower body, clean crisp outlines, '
+            'cool white key light from upper left with a cyan bounce along the '
+            'left edge and warm rust rim on the right, '
+            'whole bottle fully inside the frame'
+        ),
+        'note': 'icon: bình nước tái chế có vạch chia',
+        'kind': 'icon-sprite',
+        'style': STYLE_ICON_SPRITE,
+        'key_bg': True,
+    },
+    'icon-moxie-core': {
+        'prompt': (
+            'a single cylindrical MOXIE style oxygen generator cartridge, '
+            'seen in three quarter view standing tilted at about thirty '
+            'degrees, clearly a fat short drum with round ends, '
+            'the drum body is bright NASA equipment white painted metal, '
+            'lit strongly so the pale body stands out against any background, '
+            'the middle third of the drum is a stack of many separate thin '
+            'flat circular cooling discs, each disc a distinct ring with a '
+            'dark shadow gap between it and the next, the finned section reads '
+            'as a ribbed heat sink, '
+            'steel grey end caps bolted on with visible hex bolts, '
+            'a heavy machined brass and steel connector head on the left end '
+            'with a knurled locking collar and two short rigid pipe stubs '
+            'pointing left, '
+            'a small glowing cyan indicator window and one amber status lamp '
+            'on the upper surface, '
+            'a rust orange caution band around the right end, '
+            'light dust film on the white paint, clean crisp outlines on every '
+            'fin, '
+            'strong bright cool white key light from upper left, warm amber '
+            'glow from the connector end, bright rim light along the top edge, '
+            'whole drum fully inside the frame'
+        ),
+        'note': 'icon: lõi lọc MOXIE',
+        'kind': 'icon-sprite',
+        'style': STYLE_ICON_SPRITE,
+        'key_bg': True,
+    },
+    'icon-battery-spare': {
+        'prompt': (
+            'a single spare battery pack as a chunky rectangular block, '
+            'seen in three quarter view standing on one narrow end, '
+            'a rugged steel grey case with rounded corner bumpers and a '
+            'recessed carry handle slot on top, '
+            'two thick brass coloured terminals on the top face, one positive '
+            'and one negative, clearly separated, '
+            'a vertical column of four small charge indicator lamps on the '
+            'front face, three lit amber and one dark, '
+            'a pale NASA equipment white label plate with a rust orange band '
+            'and a cyan status strip low on the front, '
+            'faint vent slots cut into the side, scuffed edges, '
+            'clean crisp outlines, cool white key light from upper left with '
+            'an amber glow from the lit lamps, whole block inside the frame'
+        ),
+        'note': 'icon: pin dự phòng',
+        'kind': 'icon-sprite',
+        'style': STYLE_ICON_SPRITE,
+        'key_bg': True,
+    },
+    'icon-antenna-board': {
+        'prompt': (
+            'a single antenna circuit board seen flat on at a slight tilt, '
+            'a rectangular dark green printed circuit board with a pale metal '
+            'mounting frame, '
+            'a large square copper antenna coil taking up the whole upper half '
+            'of the board, a flat spiral of thick copper trace wound four full '
+            'turns with clear gaps between the turns, the single dominant '
+            'feature of the board, '
+            'a row of silver surface mount components and small capacitors '
+            'along the lower edge, thin pale cyan silkscreen tracks running '
+            'between them, '
+            'a bright brass coaxial connector block sticking up from the right '
+            'edge with a threaded collar and a short centre pin, '
+            'four mounting holes in the corners, one small amber lamp, '
+            'clean crisp lineart on every trace, '
+            'cool white key light from upper left, warm rust rim along the '
+            'board edge, whole board and connector inside the frame'
+        ),
+        'note': 'icon: bo mạch ăng-ten',
+        'kind': 'icon-sprite',
+        'style': STYLE_ICON_SPRITE,
+        'key_bg': True,
+    },
+    'icon-first-aid': {
+        'prompt': (
+            'a single first aid kit box seen in three quarter view, '
+            'a compact moulded hard case in clean NASA equipment white with '
+            'steel grey reinforced corners and a rounded lid, '
+            'a bold red cross symbol embossed in the centre of the lid front, '
+            'not a printed sticker, raised and painted, '
+            'a metal latch clasp with a small amber push button on the front '
+            'edge, '
+            'a thin rust orange stripe running around the body just below the '
+            'lid seam, two hinge blocks at the back, '
+            'a faint dust film and one small scuff on the lid, '
+            'clean crisp outlines, cool white key light from upper left with '
+            'warm amber fill from below, whole case inside the frame'
+        ),
+        'note': 'icon: bộ sơ cứu',
+        'kind': 'icon-sprite',
+        'style': STYLE_ICON_SPRITE,
+        'key_bg': True,
+    },
+
+    # ---------- hai tranh popup màn căn cứ ----------
+
+    'popup-comms-radar': {
+        'prompt': (
+            'interior of a cramped Mars habitat communications station at '
+            'night, seen in a wide 16:9 composition, '
+            'a large circular radar screen dominating the upper middle of '
+            'frame, mounted in a heavy steel grey console frame, '
+            'the screen dark with a glowing cyan sweep line rotating from the '
+            'centre and three faint cyan target blips with short motion '
+            'trails arcing across the scope, '
+            'a faint green-cyan grid of range rings on the glass, '
+            'the console below the screen is crowded with rows of round '
+            'knurled knobs, toggle switches and small amber lit button '
+            'indicators, an angled keyboard slab and a coiled handset '
+            'hanging on a hook, '
+            'the cyan light from the screen washes over one operator seen from '
+            'behind, only the back of the shoulders and the short cropped hair '
+            'are visible in silhouette at the lower left, one hand resting on '
+            'a knob, face turned away from camera and not visible, '
+            'cable runs and a patch panel of connectors on the wall behind, '
+            'dark steel grey walls, faint rust orange primer patches, red dust '
+            'film on every surface, '
+            'cool cyan key light only from the screen with a warm amber accent '
+            'lamp high on the right wall'
+        ),
+        'note': 'popup: trạm liên lạc, màn radar và bóng người vận hành',
+        'kind': 'popup',
+        'style': STYLE_POPUP,
+    },
+    'popup-airlock-eva': {
+        'prompt': (
+            'interior of a Mars habitat airlock chamber seen from inside, '
+            'wide 16:9 composition, '
+            'a heavy circular vault style outer door at the centre of frame '
+            'swung open on thick hinges, '
+            'beyond the open doorway a blinding wall of red dust storm fills '
+            'the whole opening, thick ochre and rust orange sand streaking '
+            'sideways past the frame, the outside world completely obscured, '
+            'a haze of fine dust blowing in across the threshold and swirling '
+            'low over the floor grating, '
+            'on the right hand wall a steel rack holds two bulky white EVA '
+            'pressure suits hanging empty from the shoulders, one helmet '
+            'seated on a shelf beside them with a scratched mirrored visor, '
+            'a second helmet clipped to the wall brackets, coiled tether '
+            'loops and a tool harness, '
+            'a yellow and black hazard band painted around the door frame, '
+            'an amber warning lamp lit above the door casting a hot pool of '
+            'light on the floor, '
+            'steel grey interior walls, condensation on the ceiling panels, '
+            'red dust film on the suits and on the floor, '
+            'warm amber interior light meeting the cold red storm light in the '
+            'doorway, no people in frame'
+        ),
+        'note': 'popup: khoang khoá khí mở ra bão cát, giá đồ EVA',
+        'kind': 'popup',
+        'style': STYLE_POPUP,
     },
 }
 
@@ -707,10 +1092,19 @@ def call_api(key, prompt, timeout):
     return None, {'status': 0, 'detail': 'không có b64_json lẫn url'}
 
 
+def out_dir_for(spec):
+    """Thư mục ghi ảnh gốc: bộ art màn căn cứ (char, icon-sprite, popup) ghi
+    ra gen-sprites/ để không bị vòng quét gen/*.png của process-assets.py
+    nhặt nhầm vào pipeline cũ."""
+    kind = spec.get('kind')
+    return SPRITE_DIR if kind in ('char', 'icon-sprite', 'popup') else OUT_DIR
+
+
 def generate(key, name, spec):
     """Sinh một asset, có thử lại khi gặp lỗi tạm thời."""
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = OUT_DIR / f'{name}.png'
+    d = out_dir_for(spec)
+    d.mkdir(parents=True, exist_ok=True)
+    out_path = d / f'{name}.png'
 
     if out_path.exists() and out_path.stat().st_size > 5000:
         print(f'  [{name}] đã có, bỏ qua. Dùng --force để làm lại.')
@@ -722,6 +1116,10 @@ def generate(key, name, spec):
     # Ghép khối style chung vào mọi prompt để cả bộ ảnh cùng một giọng.
     # Cảnh có người thì dùng biến thể riêng, xem spec['style'].
     full_prompt = spec['prompt'] + ', ' + spec.get('style', STYLE)
+    # Icon/strip nào cần tách nền thì phải xin thêm nền xám phẳng, vì model
+    # ảnh không xuất alpha thật. Không có câu này thì hậu kỳ matte ra rỗng.
+    if spec.get('key_bg'):
+        full_prompt += ', ' + ICON_KEY_BG
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         t0 = time.time()
@@ -771,13 +1169,13 @@ def main():
     if args.list:
         print('Asset có sẵn:')
         for k, v in ASSETS.items():
-            done = 'đã có' if (OUT_DIR / f'{k}.png').exists() else 'chưa có'
+            done = 'đã có' if (out_dir_for(v) / f'{k}.png').exists() else 'chưa có'
             print(f'  {k:16} {done:8} {v["note"]}')
         return
 
     if args.force:
         for k in (ASSETS if args.all else [args.name] if args.name else []):
-            p = OUT_DIR / f'{k}.png'
+            p = out_dir_for(ASSETS[k]) / f'{k}.png'
             if p.exists():
                 p.unlink()
                 print(f'  đã xoá {k}.png cũ')
