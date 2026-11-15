@@ -2112,6 +2112,10 @@ ASSETS = {
             'angle looking up, dozens of them on their feet, fists thrust high '
             'in the air, faces ablaze with determination, mouths open mid '
             'cheer, ranks of bodies filling the panel from edge to edge, '
+            'every single shirt, vest and jacket in the crowd is completely '
+            'plain, blank fabric with nothing sewn or pinned on the chest, '
+            'no round badge, no oval badge, no pin, no pin badge, no name '
+            'plate, no tag, no emblem disc of any size on anyone, '
             'heroic low angle hero shot, powerful cyan and amber light '
             'blasting from behind them through haze, triumphant energy, '
             + IM_CHARS + ', ' + IM_NO_BADGE
