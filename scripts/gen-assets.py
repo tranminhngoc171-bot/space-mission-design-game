@@ -469,6 +469,43 @@ IM_ASTRO = (
     'at his waist'
 )
 
+# ------------------------------------------------- khung trạm nhận tin (beacon)
+# Năm khung kể cảnh trạm mặt đất nhận tín hiệu từ Sao Hỏa. Đây là tranh
+# kể chuyện có người, nên KHÔNG dùng STYLE_CLEAN (khoá người). Dùng chung
+# giọng với IM_STYLE và ENDING_STYLE để khung này đứng cạnh mười ba khung
+# chuyển tiếp vẫn là một bộ: truyện tranh toàn màu, nét mực sắc, điện ảnh.
+#
+# Khác IM_STYLE ở chỗ bảng màu phòng điều khiển của trạm mặt đất là xanh
+# lơ của màn hình trên nền navy tối, cộng hổ phách của đèn bàn và đỏ cam
+# cảnh báo — đúng bảng màu đã dùng cho bg-im-*.
+#
+# Cấm ba thứ rất cụ thể, vì model hay vẽ chúng lên tranh phòng điều khiển:
+# (1) logo NASA / miếng vá tròn, (2) chữ trên màn hình (kể cả chữ giả),
+# (3) chữ trên tường, biển, giấy. Luật của game là tranh không có chữ.
+BEACON_STYLE = (
+    'full-color graphic novel illustration, sharp clean ink linework, '
+    'deep shadows, cinematic dramatic lighting, science fiction comic book '
+    'style, rich saturated colors, 16:9 widescreen composition, '
+    'palette of cyan glow from screens, amber #e8a33d from warm lamps, '
+    'dark navy room shadow, red orange emergency light, '
+    'absolutely no text, no letters, no numbers, no labels, no signage, '
+    'no writing on any screen, wall or paper, no fake interface glyphs, '
+    'no watermark, no logo, no emblem, no badge, no circular agency '
+    'roundel, no NASA meatball logo, no flag of any kind, '
+    'no caption box, no speech bubble, no border, no frame'
+)
+
+# Khung có người: mở khoá con người nhưng vẫn cấm chữ và huy hiệu. Đội
+# trực của trạm là kỹ thuật viên mặc áo sơ mi trắng xắn tay, KHÔNG đeo
+# huy hiệu, không bảng tên, không thẻ nhân viên — nếu không model sẽ dán
+# miếng vá tròn lên ngực và như thế là vi phạm luật dự án.
+BEACON_STYLE_CREW = BEACON_STYLE.replace(
+    'no caption box, no speech bubble, no border, no frame',
+    'the people are civilian flight controllers in plain unmarked '
+    'shirtsleeves, no badge and no patch and no name tag on any chest, '
+    'no caption box, no speech bubble, no border, no frame',
+)
+
 # ---------------------------------------------------------------- mô tả asset
 
 ASSETS = {
@@ -2201,6 +2238,120 @@ ASSETS = {
         'note': 'chuyển tiếp 13: ô chéo, giám đốc hô, cả đội giơ nắm đấm',
         'kind': 'scene',
         'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+
+    # ---------- năm khung trạm nhận tín hiệu (beacon) ----------
+    # Khe cảnh giữa Phase 1 và Phase 2: trạm mặt đất trên Trái Đất nhận
+    # tín hiệu từ người sống sót. Mô tả từng khung bám sát BEACON_FRAMES
+    # trong src/beacon.js, không dùng chung một câu cảnh chung chung.
+    # Tên beacon- để process-assets.py nhặt riêng, không lẫn với bg-*.
+    # Ảnh gốc của model thường là 1376x768, cắt về 16:9 chỉ mất vài px.
+    'beacon-01': {
+        'prompt': (
+            'wide shot inside a deep space network ground station control '
+            'room at three in the morning, one young duty operator alone at '
+            'a console desk in the foreground seen from behind and to the '
+            'side, his face not visible, '
+            'a large wall screen in front of him glowing, the screen shows '
+            'a flat noisy static waveform that suddenly breaks into one '
+            'clear repeating pulse pattern, the pulse drawn as a bright '
+            'cyan spike train, '
+            'a status lamp on the console beside him switching from red '
+            'glow to green glow, both colours visible, the green just '
+            'winning, '
+            'rows of empty dark consoles receding into shadow behind him, '
+            'cold cyan screen light on his shoulders and the desk, one '
+            'warm amber desk lamp, tense quiet night atmosphere, '
+            + BEACON_STYLE_CREW
+        ),
+        'note': 'beacon 1: phòng trạm mặt đất, người trực, đèn đỏ chuyển xanh',
+        'kind': 'scene',
+        'style': BEACON_STYLE_CREW,
+        'size': '1600x900',
+    },
+    'beacon-02': {
+        'prompt': (
+            'tight close shot of a single computer monitor in a dark ground '
+            'station control room, the screen filling most of the frame, '
+            'the screen shows a repeating pulse signal pattern rising out '
+            'of background noise, drawn as glowing cyan spikes over a dark '
+            'trace, no characters, no digits, no letters anywhere on it, '
+            'in the soft blurred foreground at the lower edge of frame one '
+            'hand in a shirt sleeve rests gently on the shoulder of a '
+            'second person seen from behind, the gesture of reassurance, '
+            'the rest of the room dark and out of focus, cyan screen glow '
+            'spilling across the desk and the two figures, '
+            + BEACON_STYLE_CREW
+        ),
+        'note': 'beacon 2: cận màn hình có tín hiệu, bàn tay đặt lên vai',
+        'kind': 'scene',
+        'style': BEACON_STYLE_CREW,
+        'size': '1600x900',
+    },
+    'beacon-03': {
+        'prompt': (
+            'wide shot inside a ground station control room erupting in '
+            'celebration, a dozen engineers in plain shirtsleeves all on '
+            'their feet at once between the rows of consoles, '
+            'one man in the middle with both arms thrown straight up in '
+            'the air, mouth open mid shout, '
+            'two other people embracing each other tightly beside a '
+            'console, one person leaning on a desk with both hands, head '
+            'bowed in relief, '
+            'loose printed sheets lifted into the air, chairs pushed '
+            'back, faces jubilant and tearful, '
+            'the large wall screen behind them glowing bright cyan with '
+            'the pulse signal pattern, warm amber and cyan light mixing '
+            'over the whole room, joyful chaotic energy, '
+            + BEACON_STYLE_CREW
+        ),
+        'note': 'beacon 3: cả phòng đứng dậy, người giơ tay, người ôm nhau',
+        'kind': 'scene',
+        'style': BEACON_STYLE_CREW,
+        'size': '1600x900',
+    },
+    'beacon-04': {
+        'prompt': (
+            'wide shot of a mission briefing room, a long dark conference '
+            'table running across the frame, eight people in plain '
+            'shirtsleeves and dark ties seated around it, seen from a '
+            'slightly high three quarter angle, faces serious and set, '
+            'at the centre of the table lies a large printed map of the '
+            'red planet Mars seen from above, rust orange surface with '
+            'dark canyon marks, no lettering on the map, '
+            'beside the map a single column of plain white paper sheets '
+            'with completely blank unmarked pages, no figures, no '
+            'numbers, no writing of any kind on any paper, '
+            'a few coffee cups, one overhead lamp pool of warm light over '
+            'the table, the rest of the room in deep navy shadow, '
+            'heavy serious atmosphere, '
+            + BEACON_STYLE_CREW
+        ),
+        'note': 'beacon 4: phòng họp, bàn dài, bản đồ Sao Hỏa, cột số chi phí',
+        'kind': 'scene',
+        'style': BEACON_STYLE_CREW,
+        'size': '1600x900',
+    },
+    'beacon-05': {
+        'prompt': (
+            'dramatic low angle shot inside a mission briefing room, one '
+            'man in a plain white shirt and dark tie standing up from his '
+            'chair at the long conference table, leaning forward with '
+            'both palms pressed flat down on the table surface, weight '
+            'into his arms, jaw set hard, face lit from below by the '
+            'overhead lamp, determined, '
+            'around the table the other seven seated people have all '
+            'turned and looked up at him, mid turn, motion frozen, '
+            'the Mars map still lying on the table in front of him, '
+            'deep navy shadow in the room behind, one strong warm key '
+            'light over the table carving him out of the dark, the '
+            'frozen instant before a decision that changes everything, '
+            + BEACON_STYLE_CREW
+        ),
+        'note': 'beacon 5: một người đứng dậy tay đập lên bàn, cả phòng nhìn lên',
+        'kind': 'scene',
+        'style': BEACON_STYLE_CREW,
         'size': '1600x900',
     },
 }
