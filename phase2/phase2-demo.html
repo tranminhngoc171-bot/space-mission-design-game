@@ -30,6 +30,13 @@
   </div>
 </header>
 
+<!-- hai tab của trò chơi: Trái Đất (Giai đoạn 2) và Sao Hỏa (giả lập Giai đoạn 1) -->
+<nav class="p2-views">
+  <button class="p2-view is-active" type="button" id="view-earth">TAB TRÁI ĐẤT · GIAI ĐOẠN 2</button>
+  <button class="p2-view" type="button" id="view-mars">TAB SAO HỎA · GIAI ĐOẠN 1 (GIẢ LẬP)</button>
+</nav>
+
+<div data-view="earth">
 <nav class="p2-tabs" data-step-tabs>
   <button class="p2-tab" type="button" data-for="1" data-cml="CML 1-2">Hồi 1 · Mục tiêu</button>
   <button class="p2-tab" type="button" data-for="2" data-cml="CML 3">Hồi 2 · Trade Space</button>
@@ -76,6 +83,12 @@
     <div data-phase2="viz" hidden></div>
   </aside>
 </main>
+</div>
+
+<!-- Giai đoạn 1 giả lập: chỉ phát đúng ba sự kiện trong hợp đồng -->
+<section class="p2-stage p2-stage-single" data-view="mars" hidden>
+  <div data-phase1-mock></div>
+</section>
 
 <footer class="p2-foot">
   <span class="p2-num">CML 1-4 · NASA Mission Design Lab · JPL RYG checklist</span>
@@ -90,5 +103,6 @@
 <script src="feature-cml4-checklist.js"></script>
 <script src="feature-execution-viz.js"></script>
 <script src="phase2-app.js"></script>
+<script src="phase1-mock.js"></script>
 </body>
 </html>

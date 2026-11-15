@@ -19,6 +19,34 @@ cần fetch, không có asset ngoài).
 Bảng thử nghiệm trên đầu trang có hai nút giả lập đúng hai sự kiện của Giai đoạn 1
 để chạy độc lập.
 
+## Bộ giả lập Giai đoạn 1 (tab SAO HỎA)
+
+Trang demo có hai tab: **TAB TRÁI ĐẤT** (Giai đoạn 2) và **TAB SAO HỎA** (giả lập
+Giai đoạn 1). Tab Sao Hỏa **không phải** game sinh tồn thật, nó chỉ phát đúng ba
+sự kiện trong hợp đồng với dữ liệu do người test chỉnh:
+
+| Điều khiển | Ảnh hưởng |
+|---|---|
+| Thanh trượt *Phi hành gia còn sống* (120-420 Sol) | `astronautSurvivalSols`, quyết định bài toán thời gian ở Hồi 1 |
+| Thanh trượt *Sức khỏe vườn cây* | `cropHealthPercent` |
+| Thanh trượt *Khoảng cách* (55-400 triệu km) | `earthMarsDistanceKm` → đổi độ trễ ánh sáng hiển thị |
+| Công tắc *Bão bụi* | `dustStormActive`, bật thì pin mặt trời tụt biên độ và bị cảnh báo đỏ |
+| Ba nút preset Dễ / Chuẩn / Khó | đặt nhanh bộ số, khỏi kéo từng thanh |
+
+Luồng test đầy đủ:
+
+1. Tab SAO HỎA, chọn preset, bấm **Gửi SOS về Trái Đất** → tự nhảy sang tab Trái Đất.
+2. Hồi 1 → 2 → 3, chọn kiến trúc, bật hai công tắc, bấm **LAUNCH MISSION**.
+3. Ở mốc 75%, tab SAO HỎA nhấp nháy và nút **EVA: cắm đèn hiệu** được mở khoá.
+4. Bấm nút đó → `mars:beacon-deployed` → tàu hạ cánh, hiện tổng kết NASA analogue.
+
+Nhật ký sự kiện ở cuối tab Sao Hỏa ghi lại từng `CustomEvent` kèm payload, nên
+nhìn được đúng hợp đồng hai chiều đang chạy.
+
+Preset **Dễ (320 Sol)** cho nhiều tổ hợp qua cổng CML 4 hơn; preset **Khó (200 Sol)**
+gần như không có đường thắng, dùng để test nhánh thất bại.
+
+
 ## Các file
 
 | File | Vai trò |
@@ -31,6 +59,7 @@ Bảng thử nghiệm trên đầu trang có hai nút giả lập đúng hai s�
 | `feature-cml4-checklist.js` | Hồi 3: bảng RYG, thẻ kiến thức, công tắc quy trình, khoá LAUNCH. |
 | `feature-execution-viz.js` | Hồi 4-5: canvas quỹ đạo, sóng DSN, đèn hiệu, tổng kết NASA analogue. |
 | `phase2-app.js` | Tạo `window.phase2Engine`, mount bốn feature, định tuyến hồi, bảng thử nghiệm. |
+| `phase1-mock.js` | Giả lập Giai đoạn 1: thanh trượt dữ liệu, nút gửi SOS, nhiệm vụ EVA đèn hiệu, nhật ký sự kiện. |
 | `phase2.css` | Toàn bộ style, biến trong `:root`. JS chỉ toggle class trạng thái. |
 
 ## Hợp đồng sự kiện với Giai đoạn 1

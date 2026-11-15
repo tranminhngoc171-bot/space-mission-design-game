@@ -68,6 +68,11 @@ class El {
     if (k === 'hidden') this.hidden = true;
   }
   getAttribute(k) { return this.attrs[k]; }
+  removeAttribute(k) {
+    delete this.attrs[k];
+    if (k === 'disabled') this.disabled = false;
+    if (k === 'hidden') this.hidden = false;
+  }
   addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
   dispatch(type, ev) { (this.listeners[type] || []).forEach((fn) => fn(ev)); }
   getContext() {
@@ -117,13 +122,13 @@ body.attrs['data-phase1'] = 'disconnected';
 /* trang demo: tạo đúng các container và nút mà phase2-app.js tìm */
 const stage = new El('main');
 body.appendChild(stage);
-const sectionFor = (step) => {
+const steps = [1, 2, 3, 4].map((n) => {
   const s = new El('section');
-  s.setAttribute('data-step', String(step));
-  if (step !== 1) s.hidden = true;
+  s.setAttribute('data-step', String(n));
+  if (n !== 1) s.hidden = true;
+  stage.appendChild(s);
   return s;
-};
-const steps = [1, 2, 3, 4].map((n) => { const s = sectionFor(n); stage.appendChild(s); return s; });
+});
 const roots = {};
 for (const name of ['cml1', 'cml3', 'cml4']) {
   const root = new El('div');
@@ -136,6 +141,31 @@ vizRoot.setAttribute('data-phase2', 'viz');
 vizRoot.hidden = true;
 stage.appendChild(vizRoot);
 roots.viz = vizRoot;
+
+/* hai tab + vùng giả lập Giai đoạn 1 (phase1-mock.js cần đúng cấu trúc này) */
+const viewBar = new El('nav');
+viewBar.className = 'p2-views';
+for (const id of ['view-earth', 'view-mars']) {
+  const b = new El('button');
+  b.className = 'p2-view';
+  b.setAttribute('id', id);
+  viewBar.appendChild(b);
+}
+body.appendChild(viewBar);
+
+const earthWrap = new El('div');
+earthWrap.setAttribute('data-view', 'earth');
+body.appendChild(earthWrap);
+earthWrap.appendChild(stage);
+
+const marsView = new El('section');
+marsView.setAttribute('data-view', 'mars');
+marsView.hidden = true;
+const mockRoot = new El('div');
+mockRoot.setAttribute('data-phase1-mock', '');
+marsView.appendChild(mockRoot);
+body.appendChild(marsView);
+roots.mock = mockRoot;
 
 const tabBar = new El('nav');
 tabBar.setAttribute('data-step-tabs', '');
@@ -159,6 +189,7 @@ for (const role of ['header-sol', 'header-light', 'header-signal']) {
 
 const document = {
   body,
+  readyState: 'complete',
   createElement: (tag) => new El(tag),
   createTextNode: (text) => new TextNode(text),
   querySelector: (sel) => (matchSel(body, sel) ? body : body.querySelector(sel)),
@@ -187,7 +218,8 @@ const context = vm.createContext(windowObj);
 const ORDER = [
   'phase2-engine.js', 'phase2-i18n.js', 'bridge-adapter.js',
   'feature-cml1-telemetry.js', 'feature-cml3-tradespace.js',
-  'feature-cml4-checklist.js', 'feature-execution-viz.js', 'phase2-app.js'
+  'feature-cml4-checklist.js', 'feature-execution-viz.js', 'phase2-app.js',
+  'phase1-mock.js'
 ];
 for (const file of ORDER) {
   const code = readFileSync(path.join(P2, file), 'utf8');
@@ -205,11 +237,29 @@ if (!windowObj.Phase2Bridge) fail('bridge-adapter.js không gắn window.Phase2B
 const standby = roots.cml1.textContent;
 if (!/CHỜ TÍN HIỆU|WAITING FOR THE DISTRESS/.test(standby)) fail('màn chờ không render đúng: ' + standby.slice(0, 80));
 
-/* SOS mở khóa toàn bộ */
-windowObj.Phase2Bridge.simulateSos({ astronautSurvivalSols: 250, dustStormActive: true, earthMarsDistanceKm: 215000000 });
+function clickByText(root, needle) {
+  const btn = descendants(root).find((n) => n.tagName === 'BUTTON' && n.textContent.includes(needle));
+  if (!btn) return null;
+  btn.dispatch('click', { target: btn, preventDefault() {}, stopPropagation() {} });
+  return btn;
+}
+
+/* Bộ giả lập Giai đoạn 1 phải mount được và có nút gửi SOS */
+const sosBtn = descendants(roots.mock).find((n) => n.tagName === 'BUTTON' && n.textContent.includes('Gửi SOS'));
+if (!sosBtn) fail('phase1-mock không render nút «Gửi SOS»');
+const evaBtn = descendants(roots.mock).find((n) => n.getAttribute('data-role') === 'p1-eva');
+if (!evaBtn) fail('phase1-mock không render nút EVA đèn hiệu');
+else if (!evaBtn.disabled) fail('nút EVA phải bị khoá trước khi Trái Đất gửi lệnh DSN');
+
+/* Bấm SOS từ phía giả lập, đúng đường đi thật của người chơi */
+if (sosBtn) clickByText(roots.mock, 'Gửi SOS');
+
 const afterSos = roots.cml1.textContent;
 if (!/250/.test(afterSos)) fail('sau SOS, telemetry sinh tồn không hiện số 250');
 if (!/11\.95/.test(roots.cml1.textContent + body.textContent)) fail('độ trễ ánh sáng 11.95 không hiện ở header/telemetry');
+if (!descendants(roots.mock).some((n) => n.classList.contains('p2-log-row'))) {
+  fail('nhật ký sự kiện của mock trống sau khi gửi SOS');
+}
 
 /* CML 4 phải render đủ 8 dòng kiểm duyệt */
 const checkRows = descendants(roots.cml4).filter((n) => n.classList.contains('p2-check'));
@@ -236,7 +286,14 @@ if (launchBtn2 && launchBtn2.classList.contains('is-locked')) fail('cấu hình 
 
 eng.launchMission();
 await new Promise((r) => setTimeout(r, 2800));
-windowObj.Phase2Bridge.simulateBeaconDeployed();
+
+/* Đến mốc 75%, mock phải được mở khoá EVA và tự cắm đèn hiệu khi bấm */
+const evaNow = descendants(roots.mock).find((n) => n.getAttribute('data-role') === 'p1-eva');
+if (!evaNow) fail('mất nút EVA sau khi phóng');
+else {
+  if (evaNow.disabled) fail('EVA vẫn bị khoá dù DSN đã giao lệnh');
+  evaNow.dispatch('click', { target: evaNow, preventDefault() {}, stopPropagation() {} });
+}
 
 const status = eng.getFullState().state.execution.status;
 if (status !== 'COMPLETED') fail(`trạng thái cuối ${status}, kỳ vọng COMPLETED`);
