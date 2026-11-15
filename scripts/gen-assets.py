@@ -52,16 +52,48 @@ BACKOFF = [8, 20, 45]   # giây chờ giữa các lần thử
 # Lý do: model tạo ảnh đổi phong cách theo từng lần gọi. Nếu mỗi ảnh
 # tả style khác nhau thì bộ asset trông như nhặt từ nhiều game khác
 # nhau ghép lại. Một khối style cố định giữ cả bộ cùng một giọng.
-STYLE = (
+STYLE_LOOK = (
     'digital painting, semi-realistic concept art, '
     'soft brushwork with visible texture, '
     'cinematic warm lighting from a single low sun, '
     'muted desaturated palette of ochre, rust red and dusty amber, '
     'shallow depth of field, film grain, '
-    'NASA concept art book aesthetic, '
+    'NASA concept art book aesthetic'
+)
+
+STYLE_CLEAN = (
+    STYLE_LOOK + ', '
     'no text, no letters, no numbers, no logo, no watermark, '
     'no people, no faces, no hands'
 )
+
+# Cảnh mở đầu mới bắt buộc phải có người: nhóm phi hành gia chạy trong
+# bão, góc nhìn thứ nhất, cận mặt trong mũ. Dùng chung khối STYLE ở trên
+# thì model sẽ không vẽ người nào, khung hình thành phong cảnh trống và
+# mất hẳn ý đồ kể chuyện. Ba biến thể dưới đây giữ nguyên giọng màu và
+# ánh sáng, chỉ mở khoá phần con người.
+STYLE_CREW = (
+    STYLE_LOOK + ', '
+    'figures in bulky white EVA pressure suits with scuffed visors, '
+    'faces not visible behind mirrored helmet glass, '
+    'no text, no letters, no numbers, no logo, no watermark'
+)
+
+STYLE_POV = (
+    STYLE_LOOK + ', '
+    'first person point of view, a single gloved hand and forearm '
+    'in frame at the lower edge, bulky white EVA suit sleeve, '
+    'no text, no letters, no numbers, no logo, no watermark, no face'
+)
+
+STYLE_FACE = (
+    STYLE_LOOK + ', '
+    'one astronaut seen in close up through a clear helmet visor, '
+    'face visible behind the glass, red dust on the visor, '
+    'no text, no letters, no numbers, no logo, no watermark'
+)
+
+STYLE = STYLE_CLEAN
 
 # Tỉ lệ khung: dùng 16:9 cho ảnh nền, 1:1 cho icon.
 # Model có thể bỏ qua tham số size, nên vẫn phải crop ở hậu kỳ.
@@ -119,6 +151,104 @@ ASSETS = {
         ),
         'note': 'nền: trạm liên lạc',
         'kind': 'scene',
+    },
+
+    # ---------- 8 khung mở đầu điện ảnh ----------
+    # Nhịp mở màn mới: bão cát tới trước, kể bằng tai nạn, không kể bằng
+    # bữa tối ở Houston. Thứ tự khung quyết định nhịp, nên mô tả ở đây
+    # bám sát từng khung, không dùng chung một câu cảnh bão.
+
+    'bg-storm-wide': {
+        'prompt': (
+            'vast martian plain at dusk, an enormous wall of red dust '
+            'hundreds of meters tall advancing across the horizon, '
+            'buttes and boulders silhouetted in front of it, '
+            'the sun smothered to a dull orange disc, empty foreground, '
+            'extreme wide shot, everything small against the storm'
+        ),
+        'note': 'khung 1: toàn cảnh bão cát trên Sao Hỏa',
+        'kind': 'scene',
+    },
+    'bg-crew-running': {
+        'prompt': (
+            'five astronauts in bulky white pressure suits sprinting '
+            'through a martian dust storm toward the camera-left, '
+            'bodies leaning into the wind, one of them stumbling, '
+            'red dust swirling thick around their legs and backlit by '
+            'a dim orange sun, the lander legs looming behind them'
+        ),
+        'note': 'khung 2: nhóm phi hành gia chạy trong bão',
+        'kind': 'scene',
+        'style': STYLE_CREW,
+    },
+    'bg-running-pov': {
+        'prompt': (
+            'first person view running across a martian plain in a dust storm, '
+            'a suited astronaut ahead climbing the ladder of a lander, '
+            'second figure right behind them reaching for the rung, '
+            'whipped red dust streaming past, lander legs and engine bell '
+            'looming close, tilted horizon from running'
+        ),
+        'note': 'khung 3: góc nhìn thứ nhất, đồng đội leo lên tàu',
+        'kind': 'scene',
+        'style': STYLE_POV,
+    },
+    'bg-face-closeup': {
+        'prompt': (
+            'tight close up of an astronaut face inside a space helmet, '
+            'dust scratched visor, a thin horizontal band of pale light '
+            'sweeping across the eyes and cheekbone, sweat on the temple, '
+            'storm and orange haze reflected in the curved glass, '
+            'eyes wide, shallow focus on the eyes'
+        ),
+        'note': 'khung 4: cận mặt trong mũ không gian',
+        'kind': 'scene',
+        'style': STYLE_FACE,
+    },
+    'bg-fall-buried': {
+        'prompt': (
+            'a suited astronaut face down on martian ground, one arm '
+            'outstretched, red sand already drifted over the legs and back, '
+            'only the shoulder and helmet still clear, dust pouring across '
+            'the frame, low angle close to the ground'
+        ),
+        'note': 'khung 5: ngã xuống, cát phủ dần',
+        'kind': 'scene',
+        'style': STYLE_CREW,
+    },
+    'bg-mars-orbit': {
+        'prompt': (
+            'mars seen from high orbit, the whole rust red disc filling '
+            'the lower half of frame, thin pale atmosphere at the limb, '
+            'a small ascent vehicle streaking away from the surface as a '
+            'bright point with a faint exhaust trail, black space above, '
+            'cold blue-white sunlight from the side'
+        ),
+        'note': 'khung 5: toàn cảnh Sao Hỏa, tàu đã bay xa',
+        'kind': 'scene',
+    },
+    'bg-waking-eyes': {
+        'prompt': (
+            'interior of a habitat module seen from the floor, view tilted '
+            'and partially obstructed by a blurred foreground edge like '
+            'half closed eyelids, ceiling panels and cable runs overhead, '
+            'warm amber light bleeding in from the left, heavy soft focus '
+            'in the corners'
+        ),
+        'note': 'khung 7: mở mắt sau hôn mê',
+        'kind': 'scene',
+    },
+    'bg-entering-hab': {
+        'prompt': (
+            'first person view walking through the open inner hatch of a '
+            'mars habitat, dark airlock frame around the edges of frame, '
+            'warm amber interior light spilling out across a metal floor, '
+            'equipment lockers and a work table beyond the threshold, '
+            'red dust on the boot plate at the bottom of frame'
+        ),
+        'note': 'khung 8: bước vào căn cứ',
+        'kind': 'scene',
+        'style': STYLE_POV,
     },
 
     # ---------- icon vật phẩm, khung vuông ----------
@@ -230,6 +360,52 @@ ASSETS = {
         ),
         'note': 'icon: hộp dụng cụ',
         'kind': 'icon',
+    },
+    'icon-family-photo': {
+        'prompt': (
+            'a small creased paper photograph lying face up, '
+            'two people standing close together in front of a kitchen window, '
+            'the image itself worn and slightly faded, one corner bent, '
+            'a strip of black tape still stuck to the top edge, '
+            'isolated on a plain dark background, centered, product shot'
+        ),
+        'note': 'icon: tấm ảnh gia đình',
+        'kind': 'icon',
+    },
+
+    # ---------- ảnh cho đoạn hồi tưởng gia đình ----------
+    # Ba cảnh này chỉ hiện khi người chơi mở túi đồ và bấm tấm ảnh,
+    # tức là nằm trong gameplay chứ không nằm ở màn mở đầu.
+
+    'bg-houston-kitchen': {
+        'prompt': (
+            'small Houston apartment kitchen at night, a bare table with two '
+            'chairs, half packed cardboard boxes stacked against the counter, '
+            'a fridge covered in paper and one taped photograph, '
+            'a single warm ceiling light, empty wall calendar'
+        ),
+        'note': 'hồi tưởng: bếp Houston đêm trước khi đi',
+        'kind': 'scene',
+    },
+    'bg-moving-boxes': {
+        'prompt': (
+            'narrow apartment hallway filled with stacked cardboard moving '
+            'boxes, one box in the middle with a strip of tape across the '
+            'lid and a marking pen resting on top, '
+            'warm lamp light from an open doorway, bare wooden floor'
+        ),
+        'note': 'hồi tưởng: đóng thùng đồ',
+        'kind': 'scene',
+    },
+    'bg-farewell-door': {
+        'prompt': (
+            'apartment front door standing open at dawn, a duffel bag on the '
+            'floor of the threshold, cold blue light from the corridor and '
+            'warm light from inside the flat, coat hooks on the wall, '
+            'no people in frame'
+        ),
+        'note': 'hồi tưởng: chia tay ở cửa',
+        'kind': 'scene',
     },
 }
 
@@ -344,7 +520,8 @@ def generate(key, name, spec):
     print(f'    đang gửi yêu cầu, chờ 30 tới 90 giây...')
 
     # Ghép khối style chung vào mọi prompt để cả bộ ảnh cùng một giọng.
-    full_prompt = spec['prompt'] + ', ' + STYLE
+    # Cảnh có người thì dùng biến thể riêng, xem spec['style'].
+    full_prompt = spec['prompt'] + ', ' + spec.get('style', STYLE)
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         t0 = time.time()
