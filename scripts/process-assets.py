@@ -17,6 +17,7 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -34,45 +35,107 @@ ICON_PAD = 8
 ICON_QUALITY = 88
 
 
-def find_watermark_box(im):
-    """Khoanh vùng góc dưới phải để cắt bỏ watermark.
+def find_watermark(im, search_ratio=0.22):
+    """Dò watermark ngôi sao ở góc dưới phải.
 
-    Model hay đặt watermark trong khoảng 8 phần trăm cạnh ngắn nhất
-    ở góc dưới phải. Cắt thẳng vùng đó rẻ hơn và chắc hơn là dò
-    theo mẫu, vì watermark mỗi ảnh một kiểu.
+    Vì sao phải dò thay vì cắt cứng một vùng: model đặt watermark ở
+    khoảng cách khác nhau tuỳ ảnh (đo thật thấy tâm cách mép phải 7
+    phần trăm và cách đáy 13 phần trăm, chứ không sát góc), và kích
+    thước cũng đổi. Cắt cứng 10 phần trăm như bản trước để lại dấu.
+
+    Cách dò: watermark gần như trắng xám nên độ bão hoà rất thấp,
+    trong khi cảnh Sao Hỏa thì nâu cam bão hoà cao. Tìm cụm pixel
+    sáng và ít màu trong góc dưới phải rồi lấy khung bao của cụm lớn
+    nhất. Không thấy gì thì trả None, và ảnh giữ nguyên.
     """
+    a = np.array(im.convert('RGB')).astype(int)
+    h, w, _ = a.shape
+    lum = a.mean(axis=2)
+    sat = a.max(axis=2) - a.min(axis=2)
+
+    region = np.zeros((h, w), bool)
+    region[int(h * (1 - search_ratio)):, int(w * (1 - search_ratio)):] = True
+
+    cand = region & (lum > 52) & (sat < 30)
+    ys, xs = np.nonzero(cand)
+    if len(ys) < 40:
+        return None
+
+    # cụm thật thường nằm gần nhau; lấy vùng bao quanh trung vị để
+    # loại pixel sáng lẻ tẻ của chi tiết cảnh
+    cx, cy = int(np.median(xs)), int(np.median(ys))
+    keep = (np.abs(xs - cx) < w * 0.13) & (np.abs(ys - cy) < h * 0.20)
+    xs, ys = xs[keep], ys[keep]
+    if len(xs) < 30:
+        return None
+
+    # nới rộng thêm 40 phần trăm kích thước cụm để phủ hết phần mờ
+    # toả ra quanh ngôi sao
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    pad = int(max(x1 - x0, y1 - y0) * 0.55)
+    return (
+        max(0, x0 - pad), max(0, y0 - pad),
+        min(w, x1 + pad), min(h, y1 + pad),
+    )
+
+
+def sample_background(im, box):
+    """Lấy màu nền đại diện cho vùng cần che.
+
+    Không lấy trung bình cả vùng, vì vùng đó có thể chứa cả vật thể
+    sáng lẫn nền tối. Thay vào đó lấy một dải ngay trên và bên trái
+    watermark, nơi gần như chắc chắn chỉ có nền.
+    """
+    x0, y0, x1, y1 = box
     w, h = im.size
-    pad = int(min(w, h) * 0.10)
-    return (w - pad, h - pad, w, h)
+    strip_top = im.crop((max(0, x0 - 10), max(0, y0 - 26), x1, max(1, y0 - 8)))
+    strip_left = im.crop((max(0, x0 - 26), max(0, y0 - 10), max(1, x0 - 8), y1))
+    samples = []
+    for strip in (strip_top, strip_left):
+        if strip.size[0] > 0 and strip.size[1] > 0:
+            samples.append(strip.resize((1, 1), Image.LANCZOS).getpixel((0, 0)))
+    if not samples:
+        return (10, 14, 20)
+    r = sum(c[0] for c in samples) // len(samples)
+    g = sum(c[1] for c in samples) // len(samples)
+    b = sum(c[2] for c in samples) // len(samples)
+    return (r, g, b)
 
 
 def trim_watermark(im):
-    """Xoá watermark bằng cách làm mờ vùng góc, giữ nguyên khung hình.
+    """Bỏ dải chứa watermark bằng cách cắt mép, rồi để bước sau phóng lại.
 
-    Không cắt bỏ hẳn vì sẽ lệch bố cục. Thay vào đó lấy mẫu màu quanh
-    vùng đó rồi tô đè, khiến watermark biến mất mà nền vẫn liền.
+    Đã thử ba cách tô đè và cả ba đều để lại dấu: tô màu phẳng làm mất
+    độ sần, trừ nền cục bộ để sót phần mờ, lọc trung vị không xoá hết
+    ngôi sao cỡ 50px. Watermark bán trong suốt nằm đè lên chi tiết nên
+    không có cách nào khôi phục đúng chi tiết bên dưới.
+
+    Cắt mép là cách sạch nhất: watermark nằm trong 6 phần trăm ngoài
+    cùng của ảnh, cắt bỏ dải đó không mất chi tiết kể chuyện nào, và
+    bước phóng về 16:9 phía sau lo phần bù kích thước. Không có vết
+    can thiệp nào để nhìn ra.
     """
+    box = find_watermark(im)
+    if not box:
+        return im
+
+    x0, y0, _, _ = box
     w, h = im.size
-    box = find_watermark_box(im)
-    region = im.crop(box)
 
-    # màu trung bình của vùng rìa ngoài watermark
-    small = region.resize((1, 1), Image.LANCZOS)
-    fill = small.getpixel((0, 0))
+    # cắt bỏ đúng phần từ mép trái của khung watermark tới mép phải,
+    # và từ mép trên khung watermark tới mép dưới
+    cut_w = max(0, w - x0)
+    cut_h = max(0, h - y0)
 
-    patch = Image.new('RGB', region.size, fill[:3])
-    patch = patch.filter(ImageFilter.GaussianBlur(region.size[0] / 6))
+    # giới hạn: không cắt quá 12 phần trăm mỗi chiều, nếu không ảnh
+    # mất bố cục và phóng lên sẽ vỡ nét
+    cut_w = min(cut_w, int(w * 0.12))
+    cut_h = min(cut_h, int(h * 0.14))
 
-    mask = Image.new('L', region.size, 0)
-    d = ImageDraw.Draw(mask)
-    # chỉ tô đậm dần vào góc, mép ngoài để nguyên
-    md = int(min(region.size) * 0.45)
-    d.ellipse([region.size[0] - md, region.size[1] - md,
-               region.size[0] + md, region.size[1] + md], fill=210)
-    mask = mask.filter(ImageFilter.GaussianBlur(md / 3))
+    if cut_w < 4 and cut_h < 4:
+        return im
 
-    im.paste(patch, box, mask)
-    return im
+    return im.crop((0, 0, w - cut_w, h - cut_h))
 
 
 def process_scene(path):
