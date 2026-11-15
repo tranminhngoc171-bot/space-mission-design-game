@@ -1,0 +1,217 @@
+/* ============================================================
+   tokens.css
+   Bảng biến duy nhất của toàn dự án.
+
+   Muốn đổi màu, đổi cỡ chữ, đổi khoảng cách hay đổi tốc độ
+   chuyển cảnh thì sửa ở đây, không sửa trong file khác.
+
+   Ba nhóm tiền tố:
+     --bg- / --tx- / --line-   màu nền, màu chữ, màu đường kẻ
+     --st-                     giao diện phần kể chuyện
+     --art-                    tranh minh hoạ
+   ============================================================ */
+
+:root {
+
+  /* ---------- nền ---------- */
+  --bg-void:    #07090d;   /* nền tối nhất, dùng cho toàn trang */
+  --bg-deep:    #0b0f15;   /* nền lớp thứ hai */
+  --bg-panel:   #111721;   /* nền bảng, hộp thoại */
+  --bg-raise:   #161d29;   /* nền nổi lên, dùng cho header */
+  --bg-inset:   #0a0e14;   /* nền lõm, dùng cho ô nhập, thanh trượt */
+
+  /* ---------- chữ ---------- */
+  --tx-bright:  #eaf1f8;   /* chữ quan trọng nhất */
+  --tx:         #b9c7d6;   /* chữ thân */
+  --tx-soft:    #8497aa;   /* chữ phụ */
+  --tx-dim:     #72879d;   /* chữ mờ, nhãn nhỏ. Đã nâng từ #5f7183 vì
+                              cặp cũ chỉ đạt 3,96:1 trên nền tối, dưới
+                              mức 4,5:1 mà tiêu chuẩn tiếp cận yêu cầu. */
+  --tx-ghost:   #3c4a5a;   /* chữ gần như tàng hình, chỉ để gợi ý */
+
+  /* ---------- đường kẻ ---------- */
+  --line:        #26313f;
+  --line-strong: #35455a;
+  --line-hair:   #1b232e;
+
+  /* ---------- màu nhấn ---------- */
+  --amber:      #e8a33d;   /* nhấn chính, nút bấm, số liệu */
+  --amber-dim:  #6b4a1c;
+  --amber-glow: rgba(232, 163, 61, .18);
+  --cyan:       #4fb8c9;   /* nhấn phụ, nhãn kỹ thuật, tiêu đề nhóm */
+  --cyan-dim:   #20505a;
+
+  /* ---------- trạng thái ---------- */
+  --ok:         #6fbf8a;
+  --ok-glow:    rgba(111, 191, 138, .18);
+  --warn:       #e8c05a;
+  --fail:       #d9694f;
+  --fail-glow:  rgba(217, 105, 79, .18);
+
+  /* ---------- chữ, phông ---------- */
+  /* Barlow Condensed cho tiêu đề hẹp kiểu bảng điều khiển không gian.
+     Be Vietnam Pro cho thân bài vì dấu tiếng Việt hiển thị chuẩn.
+     JetBrains Mono cho số liệu và nhãn kỹ thuật. */
+  --st-font-display: 'Barlow Condensed', 'Oswald', system-ui, sans-serif;
+  --st-font-body:    'Be Vietnam Pro', 'Segoe UI', system-ui, sans-serif;
+  --st-font-mono:    'JetBrains Mono', 'Consolas', monospace;
+
+  /* ---------- cỡ chữ ----------
+     Dùng clamp theo bề rộng màn hình để chữ không bao giờ
+     quá nhỏ trên điện thoại hay quá to trên màn 4K. */
+  --st-size-base:   clamp(14px, 0.9vw + 10px, 16px);
+  --st-size-body:   clamp(1rem, 0.9rem + 0.5vw, 1.22rem);
+  --st-size-lead:   clamp(1.3rem, 1.1rem + 1.1vw, 1.9rem);
+  --st-size-label:  clamp(.6rem, .55rem + .12vw, .7rem);
+  --st-size-title:  clamp(1.5rem, 1.1rem + 2vw, 2.6rem);
+  --st-size-cap:    clamp(.62rem, .58rem + .12vw, .74rem);
+
+  /* cỡ chữ người chơi tự chỉnh trong bảng cài đặt */
+  --st-scale:       1;
+
+  /* ---------- phần kể: bố cục ---------- */
+  --st-pad-sub:       clamp(18px, 2.4vw, 34px);   /* đệm vùng phụ đề */
+  --st-pad-sub-sm:    clamp(14px, 2vw, 22px);     /* đệm vùng phụ đề trên màn hẹp */
+  --st-sub-min-h:     clamp(150px, 22dvh, 230px); /* chiều cao tối thiểu vùng phụ đề */
+  --st-sub-min-h-sm:  clamp(120px, 18dvh, 180px); /* như trên, màn hẹp */
+  --st-measure:       62ch;                       /* bề rộng dòng chữ dễ đọc nhất */
+  --st-line-height:   1.75;                       /* giãn dòng thân bài */
+  --st-size-speak:    clamp(.95rem, .88rem + .35vw, 1.1rem); /* cỡ chữ thoại */
+  --st-track-label:   .16em;                      /* giãn chữ nhãn kỹ thuật */
+
+  /* ---------- phần kể: nút điều hướng ---------- */
+  /* 44px là mức tối thiểu cho vùng bấm trên cảm ứng, áp dụng cho cả
+     bản nhỏ để người chơi điện thoại không bấm trượt. */
+  --st-btn-h:       44px;
+  --st-btn-h-sm:    44px;
+  --st-gap-btn:     10px;
+  --st-radius-btn:  var(--st-radius);
+  --st-nav-offset:  clamp(18px, 2.4vw, 34px);
+  --st-nav-offset-sm: clamp(12px, 2vw, 20px);
+
+  /* ---------- chuyển động bổ sung cho story.css ---------- */
+  --st-dur-fade:    .52s;   /* mờ dần toàn màn khi rời truyện */
+  --st-dur-in:      .9s;    /* tranh hiện lên */
+
+  /* ---------- khoảng cách ---------- */
+  --st-gap-xs:      clamp(4px, 0.6vw, 8px);
+  --st-gap-sm:      clamp(8px, 1vw, 14px);
+  --st-gap-md:      clamp(14px, 1.6vw, 24px);
+  --st-gap-lg:      clamp(22px, 2.6vw, 40px);
+  --st-gap-xl:      clamp(32px, 4vw, 64px);
+
+  /* lề hai bên, tự co lại trên màn hẹp */
+  --st-pad-x:       clamp(16px, 4vw, 72px);
+
+  /* ---------- bo góc, viền ---------- */
+  --st-radius:      3px;
+  --st-radius-lg:   6px;
+
+  /* ---------- chuyển động ---------- */
+  --st-dur-fast:    .12s;
+  --st-dur-move:    .18s;
+  --st-dur-slow:    .42s;
+
+  /* thời lượng chuyển cảnh của phần kể, story.js đọc hai số này
+     nên muốn nhịp nhanh hay chậm chỉ cần sửa ở đây */
+  --st-fade-out-ms: 130ms;
+  --st-fade-in-ms:  320ms;
+
+  --st-ease-out:    cubic-bezier(.22, .61, .36, 1);
+  --st-ease-in-out: cubic-bezier(.4, 0, .2, 1);
+
+  /* ---------- phần kể chuyện ---------- */
+  /* nền chuyển từ nâu đất tối ở trên xuống nâu đỏ ở dưới,
+     gợi bầu trời sao Hỏa lúc chiều muộn */
+  --st-bg-top:      #100a06;
+  --st-bg-mid:      #241208;
+  --st-bg-bottom:   #3d1d0c;
+
+  /* nền vùng phụ đề, tối hơn nền tranh để chữ luôn đọc được */
+  --st-sub-bg-1:    #0d0906;
+  --st-sub-bg-2:    #120c08;
+
+  --st-text:        #c8b7a6;
+  --st-text-em:     #e8d9c8;
+  --st-name:        var(--amber);
+  --st-caption:     #a8927d;
+  --st-accent:      var(--amber);
+  --st-accent-line: rgba(232, 163, 61, .35);
+
+  /* vệt tối bốn góc tranh, để mắt tập trung vào giữa */
+  --art-vignette:   .30;
+
+  /* ---------- vùng tranh ---------- */
+  --art-h-max:      56dvh;
+  --art-h-min:      280px;
+  /* Chiều cao tối thiểu của khung tranh. Không có số này thì những
+     lượt có nội dung dài, ví dụ bảng nhập tên, sẽ đẩy khung tranh
+     xuống còn một dải mỏng và ảnh 16:9 bị cắt mất hơn nửa. */
+  --art-min-h:      38dvh;
+
+  /* ---------- lớp phủ ---------- */
+  --st-overlay:     rgba(7, 10, 14, .82);
+}
+
+/* ============================================================
+   Màn hình thấp: giảm chiều cao vùng tranh để phần chữ
+   không bị đẩy ra ngoài khung nhìn.
+   ============================================================ */
+@media (max-height: 700px) {
+  :root {
+    --art-h-max: 44dvh;
+    --art-h-min: 200px;
+    --st-gap-xl: clamp(20px, 3vw, 40px);
+  }
+}
+
+@media (max-height: 520px) {
+  :root {
+    --art-h-max: 34dvh;
+    --art-h-min: 140px;
+  }
+}
+
+/* ============================================================
+   Màn hẹp: thu chữ và lề lại.
+   ============================================================ */
+@media (max-width: 620px) {
+  :root {
+    --st-pad-x: 16px;
+    --art-h-max: 40dvh;
+  }
+}
+
+/* ============================================================
+   Chế độ giảm chuyển động của hệ điều hành.
+   Người chơi nào bật "giảm chuyển động" trong Windows thì
+   hiệu ứng tự tắt, không cần chỉnh tay.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --st-fade-out-ms: 1ms;
+    --st-fade-in-ms: 1ms;
+    --st-dur-fast: 1ms;
+    --st-dur-move: 1ms;
+    --st-dur-slow: 1ms;
+  }
+}
+
+/* ============================================================
+   Người chơi tự bật tắt chuyển động trong bảng cài đặt.
+   settings-ui.js gắn class motion-off vào thẻ html.
+   ============================================================ */
+html.motion-off {
+  --st-fade-out-ms: 1ms;
+  --st-fade-in-ms: 1ms;
+  --st-dur-fast: 1ms;
+  --st-dur-move: 1ms;
+  --st-dur-slow: 1ms;
+}
+
+/* ============================================================
+   Chất lượng hình thấp: tắt hiệu ứng nặng, giữ mọi thứ đọc được.
+   ============================================================ */
+html[data-quality="low"] {
+  --art-vignette: 0;
+}
