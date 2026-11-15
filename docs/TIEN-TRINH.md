@@ -179,3 +179,46 @@ nó làm cả site trả 500.
 | Server test | `cd team-repo/src && python -m http.server 8321` |
 | Server Phase 2 | `cd team-repo && python -m http.server 8331` |
 | Kịch bản truyện | `~/Desktop/NASA-Game-Kich-Ban.txt` |
+
+
+---
+
+## 9. Phát hiện từ đợt 5 sub bị dừng giữa chừng (ghi lại 16/11)
+
+Năm sub chạy được khoảng 50 phút rồi bị dừng để tắt máy. Chúng chưa kịp
+báo cáo đầy đủ nhưng trong log còn lại mấy phát hiện đáng giá. Đây là
+danh sách để lần sau kiểm lại, KHÔNG phải đã sửa xong.
+
+### Lỗi xác nhận được, cần kiểm và sửa
+
+**1. Menu trên điện thoại có "hộp rỗng" (sub 1 phát hiện, đáng tin)**
+`.menu-actions` có cả `top: 47%` lẫn `bottom: 16%`. Vì là flex column
+định vị tuyệt đối nên nó bị kéo cao 312px trong khi nội dung chỉ 204px,
+tạo một khoảng trống thừa dưới cụm nút trên màn hẹp. Sửa: bỏ một trong
+hai thuộc tính (nên bỏ `top`, chỉ neo `bottom`).
+
+**2. Story không có nút bỏ qua (sub 2 phát hiện)**
+Yêu cầu là story phải có nút bỏ qua nhưng `story.js` không có. Giám khảo
+phải ngồi đọc hết 20 lượt thoại mới vào được game. Cần thêm nút Bỏ qua
+góc dưới phải, cùng kiểu với comic.
+
+**3. Bàn liên lạc từng không mở được (sub 3, có vẻ đã sửa)**
+Log ghi "The comms console now opens", nghĩa là sub đã sửa trong lúc chạy
+nhưng chưa kịp test xong `stage1Done` có được ghi hay không. Cần kiểm lại
+chuỗi: mở bàn liên lạc, qua ba bước, phát tín hiệu, xem cờ `smdg.stage1Done`
+có thành `'1'` và nút Thiết kế tàu có mở khoá.
+
+**4. Sáu đường chỉ dẫn Phase 2 từng tràn ra ngoài sân khấu (sub 4)**
+Log ghi "All 6 callouts are now inside the stage at distinct heights",
+tức là sub đã sửa nhưng chưa soi vision xác nhận. Cần chụp màn hình kiểm.
+
+**5. Hai chỗ chữ "Sắp xong" cứng trong bộ đếm tiến trình (sub 5)**
+Đang sửa dở thì dừng. Đây là chuỗi tiếng Việt viết cứng, không dịch theo
+ngôn ngữ. Cần tìm trong `preloader.js` hoặc `index.html` và đưa vào bảng
+dịch.
+
+### Việc chưa sub nào làm xong
+
+- Chưa có lần nào chơi thông từ đầu tới cuối bằng tay trên bản live
+- Chưa quay video 30-60 giây theo thể lệ
+- Chưa kiểm tương phản WCAG tự động cho toàn bộ chữ trên nền ảnh
