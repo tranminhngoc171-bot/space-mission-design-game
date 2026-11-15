@@ -379,12 +379,15 @@
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px var(--amber-glow));
 }
 
-.tj-flight-arrow {
-  fill: none;
-  stroke: none;
-  marker-end: url(#tj-arrow);
+.tj-arrow-head { fill: var(--amber); }
+
+/* Nhãn tên quỹ đạo viết nhỏ, mờ, đặt ở đỉnh mỗi elip. */
+.tj-tag-orbit {
+  fill: var(--tx-ghost);
+  font-size: 9px;
 }
 
 /* Trái Đất: chấm xanh. Sao Hỏa: chấm đỏ, to hơn. */

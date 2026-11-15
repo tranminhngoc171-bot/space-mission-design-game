@@ -268,28 +268,43 @@ function legsSummary() {
 const CH_W = 660;
 const CH_H = 150;
 
-/* Khung nhìn là một cửa sổ nhìn từ trên xuống, góc nhìn xiên nên
-   quỹ đạo tròn hiện ra thành elip dẹt. Hai elip dùng CÙNG một tỉ lệ
-   dẹt 0,125 để phép chiếu nhất quán:
-     Trái Đất  rx 320, ry 40
-     Sao Hỏa   rx 545, ry 68
-   Mặt Trời đặt gần mép trái, cả hai quỹ đạo quét hết bề ngang. */
-const SUN_X = 70;
-const SUN_Y = 75;
-const E_RX = 320;
-const E_RY = 40;
-const M_RX = 545;
-const M_RY = 68;
+/* Khung nhìn là cửa sổ nhìn từ trên xuống, góc nhìn xiên nên quỹ đạo
+   tròn hiện ra thành elip dẹt. Mặt Trời nằm giữa bên trái và là TÂM
+   của cả hai elip, nên hai quỹ đạo đồng tâm đúng như thật.
+
+   Chỉ vẽ phần cung quay về phía phải (khoảng -92 tới +92 độ): đó là
+   phần cửa sổ nhìn thấy được, và cũng tránh cảnh cắt cụt nửa elip
+   bên trái khiến hình trông như lệch tâm. */
+const SUN_X = 76;
+const SUN_Y = 80;
+const E_RX = 215;
+const E_RY = 30;
+const M_RX = 505;
+const M_RY = 58;
+const ARC_FROM = -92;
+const ARC_TO = 92;
 
 function ellipsePoint(cx, cy, rx, ry, deg) {
   const a = (deg * Math.PI) / 180;
   return { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) };
 }
 
-/* Trái Đất lúc phóng, góc 8 độ: gần đỉnh elip, bên phải Mặt Trời. */
-const EARTH_DEG = 8;
-/* Sao Hỏa lúc tàu tới, góc -28 độ: cao hơn, xa hơn. */
-const MARS_DEG = -28;
+/* Cung elip quanh Mặt Trời, dùng lệnh A của SVG. */
+function ellipseArcPath(rx, ry, fromDeg, toDeg) {
+  const p1 = ellipsePoint(SUN_X, SUN_Y, rx, ry, fromDeg);
+  const p2 = ellipsePoint(SUN_X, SUN_Y, rx, ry, toDeg);
+  const large = Math.abs(toDeg - fromDeg) > 180 ? 1 : 0;
+  return (
+    'M ' + p1.x.toFixed(1) + ' ' + p1.y.toFixed(1) +
+    ' A ' + rx + ' ' + ry + ' 0 ' + large + ' 1 ' +
+    p2.x.toFixed(1) + ' ' + p2.y.toFixed(1)
+  );
+}
+
+/* Trái Đất lúc phóng ở góc 24 độ, Sao Hỏa lúc tàu tới ở góc -24 độ:
+   hai điểm nằm hai bên trục ngang, chừa chỗ cho đường bay vòng lên. */
+const EARTH_DEG = 24;
+const MARS_DEG = -24;
 
 const E = ellipsePoint(SUN_X, SUN_Y, E_RX, E_RY, EARTH_DEG);
 const M = ellipsePoint(SUN_X, SUN_Y, M_RX, M_RY, MARS_DEG);
@@ -297,82 +312,109 @@ const M = ellipsePoint(SUN_X, SUN_Y, M_RX, M_RY, MARS_DEG);
 const n = (v) => v.toFixed(1);
 
 function orbitSvg() {
+  const eArc = ellipseArcPath(E_RX, E_RY, ARC_FROM, ARC_TO);
+  const mArc = ellipseArcPath(M_RX, M_RY, ARC_FROM, ARC_TO);
   return `
-    <ellipse class="tj-orbit tj-orbit-earth" cx="${SUN_X}" cy="${SUN_Y}"
-             rx="${E_RX}" ry="${E_RY}"></ellipse>
-    <ellipse class="tj-orbit tj-orbit-mars" cx="${SUN_X}" cy="${SUN_Y}"
-             rx="${M_RX}" ry="${M_RY}"></ellipse>`;
+    <path class="tj-orbit tj-orbit-earth" d="${eArc}"></path>
+    <path class="tj-orbit tj-orbit-mars" d="${mArc}"></path>`;
 }
 
 function sunSvg() {
   return `
     <circle class="tj-sun-glow" cx="${SUN_X}" cy="${SUN_Y}" r="30"></circle>
     <circle class="tj-sun-glow2" cx="${SUN_X}" cy="${SUN_Y}" r="19"></circle>
-    <circle class="tj-sun" cx="${SUN_X}" cy="${SUN_Y}" r="11"></circle>`;
+    <circle class="tj-sun" cx="${SUN_X}" cy="${SUN_Y}" r="10"></circle>`;
 }
 
-/* Ba đường bay. Ba chuỗi d khác nhau hoàn toàn:
-     hohmann  cung rộng nửa vòng, đỉnh nằm gọn giữa hai quỹ đạo
-     fast     cung hẹp hơn nhưng vọt lên rất cao, vượt hẳn quỹ đạo
-              Sao Hỏa rồi mới cắm xuống đón
-     bi       vòng lớn: rời Trái Đất, vung ngược lên trên và sang
-              trái, vượt quỹ đạo Sao Hỏa, rồi mới cong về phía Sao
-              Hỏa theo một nhánh thứ hai
-   Toạ độ đã canh theo khung 660 x 150. */
+/* Ba đường bay, ba chuỗi d khác nhau hoàn toàn và khác nhau về hình
+   dạng thấy được, không chỉ khác độ dài chuỗi:
+     hohmann  một vòm êm, đỉnh nằm gọn GIỮA hai quỹ đạo (khoảng y 34)
+     fast     cung ngắn nhưng vọt lên tới y 4, vượt hẳn đỉnh quỹ đạo
+              Sao Hỏa (y 22), rồi mới cắm xuống đón
+     bi       một thuỳ lớn vung xa sang phải tới x 606, vượt cả bán
+              kính quỹ đạo Sao Hỏa, rồi móc ngược trở lại điểm hẹn */
+
+/* Đuôi đường bay dừng lại trước chấm Sao Hỏa đúng một khoảng, để đầu
+   mũi tên nằm ngoài chấm và nhìn thấy được, không bị chấm che mất. */
+const ARROW_GAP = 16;
+
+function backOff(from, to, dist) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy) || 1;
+  return { x: to.x - (dx / len) * dist, y: to.y - (dy / len) * dist };
+}
+
+function cubicD(p0, c1, c2, p3) {
+  return (
+    `M ${n(p0.x)} ${n(p0.y)} ` +
+    `C ${n(c1.x)} ${n(c1.y)} ${n(c2.x)} ${n(c2.y)} ${n(p3.x)} ${n(p3.y)}`
+  );
+}
+
+function multiCubicD(p0, chunks) {
+  let d = `M ${n(p0.x)} ${n(p0.y)} `;
+  for (const c of chunks) {
+    d += `C ${n(c.c1.x)} ${n(c.c1.y)} ${n(c.c2.x)} ${n(c.c2.y)} ${n(c.p.x)} ${n(c.p.y)} `;
+  }
+  return d.trim();
+}
 
 function pathHohmann() {
-  /* Nửa vòng rộng: từ Trái Đất cong lên đỉnh thấp rồi xuống Sao Hỏa. */
-  return (
-    `M ${n(E.x)} ${n(E.y)} ` +
-    `C ${n(E.x + 10)} ${n(E.y - 46)} ${n(M.x - 96)} ${n(M.y - 34)} ${n(M.x - 26)} ${n(M.y - 4)} ` +
-    `S ${n(M.x)} ${n(M.y)} ${n(M.x)} ${n(M.y)}`
-  );
+  const c1 = { x: 320, y: 44 };
+  const c2 = { x: 470, y: 30 };
+  return cubicD(E, c1, c2, backOff(c2, M, ARROW_GAP));
 }
 
 function pathFast() {
-  /* Cung ngắn, đỉnh vọt cao hẳn ra ngoài quỹ đạo Sao Hỏa. */
-  return (
-    `M ${n(E.x)} ${n(E.y)} ` +
-    `C ${n(E.x + 4)} ${n(E.y - 78)} ${n(E.x + 46)} ${n(2)} ${n(E.x + 90)} ${n(4)} ` +
-    `C ${n(M.x - 60)} ${n(6)} ${n(M.x - 26)} ${n(M.y + 6)} ${n(M.x)} ${n(M.y)}`
-  );
+  const c1 = { x: 276, y: 30 };
+  const mid = { x: 410, y: 6 };
+  const c3 = { x: 520, y: 26 };
+  return multiCubicD(E, [
+    { c1, c2: { x: 330, y: 4 }, p: mid },
+    { c1: { x: 470, y: 8 }, c2: c3, p: backOff(c3, M, ARROW_GAP) },
+  ]);
 }
 
 function pathBi() {
-  /* Vòng lớn: ra xa quỹ đạo Sao Hỏa rồi mới quay vào, có hai
-     nhánh rõ ràng nên hình khác hẳn hai cái trên. */
-  return (
-    `M ${n(E.x)} ${n(E.y)} ` +
-    `C ${n(E.x - 16)} ${n(E.y - 58)} ${n(E.x - 62)} ${n(14)} ${n(E.x - 118)} ${n(20)} ` +
-    `C ${n(E.x - 186)} ${n(27)} ${n(E.x - 232)} ${n(74)} ${n(E.x - 186)} ${n(104)} ` +
-    `C ${n(E.x - 128)} ${n(136)} ${n(M.x - 150)} ${n(120)} ${n(M.x - 62)} ${n(92)} ` +
-    `S ${n(M.x)} ${n(M.y)} ${n(M.x)} ${n(M.y)}`
-  );
+  const mid = { x: 430, y: 4 };
+  const far = { x: 606, y: 60 };
+  const c5 = { x: 570, y: 96 };
+  return multiCubicD(E, [
+    { c1: { x: 320, y: 40 }, c2: { x: 360, y: 6 }, p: mid },
+    { c1: { x: 520, y: 2 }, c2: { x: 600, y: 20 }, p: far },
+    { c1: { x: 610, y: 92 }, c2: c5, p: backOff(c5, M, ARROW_GAP) },
+  ]);
 }
 
 const PATHS = { hohmann: pathHohmann, fast: pathFast, bi: pathBi };
 
+let chartSeq = 0;
+
 function chartSvg(traj, t) {
+  chartSeq += 1;
+  const arrowId = 'tj-arrow-' + chartSeq;
   const d = (PATHS[traj.chart] || pathHohmann)();
   return `
     <svg class="tj-chart" viewBox="0 0 ${CH_W} ${CH_H}" role="img"
          aria-label="${esc(traj.name_vi)} · ${esc(t('chartTitle'))}"
          preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="${arrowId}" viewBox="0 0 10 10" refX="8" refY="5"
+                markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" class="tj-arrow-head"></path>
+        </marker>
+      </defs>
       ${orbitSvg()}
       ${sunSvg()}
-      <path class="tj-orbit-tag tj-orbit-tag-earth"
-            d="M ${n(SUN_X + E_RX - 34)} ${n(SUN_Y + 4)} h 40"></path>
-      <path class="tj-orbit-tag tj-orbit-tag-mars"
-            d="M ${n(SUN_X + M_RX - 30)} ${n(SUN_Y + 8)} h 40"></path>
-      <path class="tj-flight" d="${d}"></path>
-      <path class="tj-flight-arrow" d="${d}"></path>
-      <circle class="tj-dot tj-dot-earth" cx="${n(E.x)}" cy="${n(E.y)}" r="5.5"></circle>
+      <path class="tj-flight" d="${d}" marker-end="url(#${arrowId})"></path>
       <circle class="tj-dot-halo tj-dot-halo-earth" cx="${n(E.x)}" cy="${n(E.y)}" r="10"></circle>
+      <circle class="tj-dot tj-dot-earth" cx="${n(E.x)}" cy="${n(E.y)}" r="5.5"></circle>
       <text class="tj-tag tj-tag-earth" x="${n(E.x)}" y="${n(E.y + 20)}" text-anchor="middle">${esc(t('chartEarth'))}</text>
-      <circle class="tj-dot tj-dot-mars" cx="${n(M.x)}" cy="${n(M.y)}" r="7"></circle>
       <circle class="tj-dot-halo tj-dot-halo-mars" cx="${n(M.x)}" cy="${n(M.y)}" r="12"></circle>
+      <circle class="tj-dot tj-dot-mars" cx="${n(M.x)}" cy="${n(M.y)}" r="7"></circle>
       <text class="tj-tag tj-tag-mars" x="${n(M.x)}" y="${n(M.y + 24)}" text-anchor="middle">${esc(t('chartMars'))}</text>
-      <text class="tj-tag tj-tag-sun" x="${SUN_X}" y="${n(SUN_Y + 26)}" text-anchor="middle">${esc(t('chartSun'))}</text>
+      <text class="tj-tag tj-tag-sun" x="${SUN_X}" y="${n(SUN_Y + 27)}" text-anchor="middle">${esc(t('chartSun'))}</text>
     </svg>`;
 }
 

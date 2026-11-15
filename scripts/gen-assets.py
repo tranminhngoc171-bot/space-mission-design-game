@@ -1547,17 +1547,28 @@ ASSETS = {
         'size': '1600x900',
     },
     'bg-im-04': {
+        # Bố cục hai ô NGANG thật: một ô trên, một ô dưới, gutter đen chạy
+        # hết chiều rộng. Lần đầu tả "two horizontal panels" thì model hiểu
+        # thành hai ô đặt cạnh nhau và trả về khung dọc so le, sai hẳn nhịp
+        # truyện (phải đọc trên rồi mới xuống dưới). Lần hai ghi rõ TOÀN
+        # khung 16:9 bị chia làm đôi theo chiều CAO: mỗi ô là một dải ngang
+        # thấp và rộng, ô trên nằm sát mép trên, ô dưới sát mép dưới.
+        # Ảnh gốc của model là 1376x768, cắt về 16:9 chỉ mất 2px mỗi bên,
+        # nên tỉ lệ hai ô trong ảnh gốc giữ nguyên khi vào game.
         'prompt': (
-            'SPLIT PANEL LAYOUT, two horizontal panels with a clean black '
-            'gutter between them, the gutter running edge to edge and filled '
-            'with flat black, no border around the outside of the image, '
-            'LEFT PANEL: small inset of the glowing monitor with the envelope '
+            'SPLIT PANEL LAYOUT: the whole 16:9 frame is divided into exactly '
+            'TWO WIDE, SHORT HORIZONTAL STRIPS stacked one above the other, '
+            'top panel and bottom panel of equal size with a solid flat black '
+            'gutter band running horizontally right across the full width '
+            'between them, no white paper margin anywhere, the black gutter '
+            'is the only gap, '
+            'TOP PANEL: small inset of the glowing monitor with the envelope '
             'icon seen from a distance in the dark room. '
-            'RIGHT PANEL: tight close up of the NASA flight controller '
+            'BOTTOM PANEL: tight close up of the NASA flight controller '
             'described above, shot from the side, he has just jumped up from '
             'his chair so fast the chair is tipping backwards, eyes wide open '
-            'in shock, mouth open, one arm pointing straight at the screen, '
-            'glasses catching the screen glow, dramatic rim light, '
+            'in shock, mouth open, one arm pointing straight up at the '
+            'screen, glasses catching the screen glow, dramatic rim light, '
             + IM_CHARS
         ),
         'note': 'chuyển tiếp 4: nhân viên kinh ngạc, chia hai ô ngang',
@@ -1595,9 +1606,17 @@ ASSETS = {
             'around him, '
             'screen glow lighting the underside of their faces and the desk '
             'from below, nobody speaking, the moment before a click, '
+            'FULL BLEED ART: the illustration fills the entire frame edge to '
+            'edge with drawn scenery and characters, there is no paper margin '
+            'and no rectangle of flat white anywhere in the picture, '
+            'CAMERA POSITION: the camera stands BEHIND the seated flight '
+            'controller, over the shoulders of the engineers standing behind '
+            'him, looking down at the back of his head and at the screen in '
+            'front of him, we see the BACK of his head, never his face, '
             + IM_CHARS
         ),
-        'note': 'chuyển tiếp 6: cả nhóm nín thở quanh bàn',
+        'note': ('chuyển tiếp 6: cả nhóm nín thở quanh bàn, không có ô trắng '
+                 'trống ở góc nào'),
         'kind': 'scene',
         'style': IM_STYLE_ROOM,
         'size': '1600x900',
@@ -1781,13 +1800,15 @@ ASSETS = {
     },
     'bg-im-12': {
         'prompt': (
-            'medium close up of the NASA mission director standing behind a '
-            'lectern, framed from the chest up, the lectern edge just visible '
-            'at the bottom of frame, '
+            'tight close up of the NASA mission director behind a lectern, '
+            'cropped from the shoulders up so the whole frame is filled by '
+            'his head and the top of his shoulders, his face large and '
+            'central, the lectern is only a dark blurred edge low at the '
+            'bottom of the frame and its front face is never seen square on, '
             'his jaw set hard and clenched, lips pressed in a tight firm '
             'line, MOUTH CLOSED, not shouting, no open mouth, no bared '
-            'teeth, eyes burning with fierce determination, brow furrowed, '
-            'one hand gripping the lectern edge, '
+            'teeth, no visible tongue, no grimace, no snarl, '
+            'eyes burning with fierce determination, brow furrowed, '
             'harsh key light from one side carving deep black shadows across '
             'the far side of his face, the giant NASA projection screens '
             'behind him thrown far out of focus as soft glowing cyan and amber '
