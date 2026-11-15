@@ -226,3 +226,77 @@ Làm việc 1 và việc 2a. Cụ thể:
 
 Có hai thứ đó là đã có báo cáo hậu sứ mệnh có ý nghĩa, và đó là phần được chấm cao
 nhất trong đề. Ba thanh Data, Comms, Time và truy vết quyết định làm sau vẫn kịp.
+
+---
+
+## 7. Bổ sung ngày 15/11, sau khi ba sub-agent chạy xong
+
+### 7.1 `validateRescueDesign` không kiểm ngân sách
+
+Kiểm bằng grep: trong hàm `validateRescueDesign` (dòng 453, `src/nasa-data.js`), sáu mã
+lỗi đang có là `empty_design`, `unknown_module`, `multiple_engines`, `no_engine`,
+`no_propellant`, `delta_v_shortfall`. **Không có mã nào về tiền**, và
+`grep -c cost_musd` trên toàn hàm ra **0**.
+
+Hậu quả thực tế đã gặp: một thiết kế giá 748 triệu USD vẫn trả `pass: true` trong khi
+thanh ngân sách trên màn đã đỏ. Hai phần của cùng một màn hình nói ngược nhau.
+
+Tôi đã vá tạm ở tầng giao diện: `rescue-designer.js` tự thêm lỗi `over_budget` sau khi
+gọi hàm của Ngọc. Nhưng đây là vá ngoài, đúng ra phải nằm trong hàm kiểm tra.
+
+Đề nghị Ngọc thêm vào `validateRescueDesign`:
+
+```js
+const cost = summary.cost_musd;
+if (cost > design.budget_musd) {
+  failures.push({
+    code: 'over_budget',
+    severity: 'fail',
+    message_vi: `Chi phí ${cost.toFixed(0)} triệu USD vượt ngân sách ${design.budget_musd} triệu, thiếu ${(cost - design.budget_musd).toFixed(0)} triệu.`,
+    message_en: `Cost ${cost.toFixed(0)}M USD exceeds the ${design.budget_musd}M budget by ${(cost - design.budget_musd).toFixed(0)}M.`,
+    fix_vi: 'Bỏ một module không thiết yếu, hoặc đổi sang động cơ rẻ hơn.',
+    fix_en: 'Drop one non-essential module, or switch to a cheaper engine.',
+  });
+}
+```
+
+### 7.2 Ngân sách 900 triệu làm thanh giới hạn thành vô nghĩa
+
+Sub thiết kế tàu đo được: thiết kế hợp lệ đắt nhất trong bộ dữ liệu là **727 triệu USD**.
+Nếu đặt ngân sách 900 triệu thì thanh này không bao giờ đỏ, tức là dạy người chơi
+không được gì. Nó chỉ là một con số trang trí.
+
+Sub đã hạ xuống **700 triệu**, và cấu hình cân bằng rơi vào 666 triệu, tức 95 phần trăm
+ngân sách. Con số này tạo áp lực thật mà vẫn thắng được.
+
+Đề nghị Ngọc xác nhận 700 là ngưỡng đúng, hoặc tự chọn ngưỡng khác nếu thấy hợp lý hơn.
+Nhưng đừng để 900.
+
+### 7.3 Ba cấu hình mẫu đã đo thật, dùng để đối chiếu
+
+| Mẫu | Module | Khối lượng ướt | Giá | Delta-v |
+|---|---|---|---|---|
+| Nhẹ nhất | NTP 900, 1 bình, ROSA, X-band, MOXIE, cảm biến EDL | 33.347 kg | 579 M | 8.769 m/s |
+| Cân bằng | như trên, thêm ECLSS và lá chắn bức xạ | 36.010 kg | 666 M | 7.723 m/s |
+| Mạnh nhất | như cân bằng, thêm bình thứ hai | 59.410 kg | 696 M | 10.833 m/s |
+
+Cả ba đều pass. Mẫu nhẹ nhất có một cảnh báo là thiếu lá chắn bức xạ.
+
+Nếu sau này Ngọc sửa khối lượng hay giá module, ba con số này sẽ lệch. Đó là dấu hiệu
+tốt để phát hiện sửa nhầm.
+
+### 7.4 Nhịp mười sáu sự kiện đàm phán, đã đo trên trình duyệt thật
+
+Sự kiện bắn ở các ngày 23,5 · 50,5 · 77,5 · 104,5 · 131,5 (cruise), rồi 160,4 · 177,2 ·
+194,0 · 210,8 · 227,6 (approach), 240,7 · 244,0 · 247,3 (descent), 251,8 · 253,5 ·
+255,1 (surface). Mốc chia theo số sự kiện mỗi phase, không hardcode, nên thêm bớt sự
+kiện trong JSON thì nhịp tự giãn.
+
+Với tốc độ 1x thì sự kiện đầu hiện sau khoảng 8,7 giây. Chơi hết hành trình ở 50x mất
+khoảng 8 giây nếu trả lời nhanh, ở 10x mất khoảng 26 giây.
+
+### 7.5 Điều vẫn còn thiếu, nhắc lại lần hai
+
+`computeMission` vẫn chưa được gọi ở đâu. Người chơi bay xong, `flight.js` gọi
+`onDone({ elapsedDays: 258.9, success: true, turns: 16 })`, và hiện **không có màn báo
+cáo nào**. Đây vẫn là lỗ hổng lớn nhất so với đề bài.
