@@ -351,6 +351,17 @@ IM_STYLE = (
 # gửi cùng một đoạn 190 từ hai lần trong một câu lệnh.
 IM_STYLE_ROOM = IM_STYLE
 
+# Khung 11 là cảnh đám đông kín phòng: câu "chừa một góc trống để đặt hộp
+# thoại" trong IM_STYLE bị model hiểu thành vẽ hẳn một ô chữ nhật trắng
+# trơn ở góc dưới phải (đã thấy rõ ở lần sinh thứ hai, đo được vùng trắng
+# 320x100 px). Khung này không cần chỗ đặt thoại vì phụ đề nằm dưới tranh,
+# nên bỏ đúng câu đó, giữ nguyên phần còn lại từng chữ.
+IM_STYLE_NO_CORNER = IM_STYLE.replace(
+    'leave a calm uncluttered area in one upper or lower corner so a dialogue '
+    'box can sit on top of the art later, ',
+    'fill the frame with rendered scene detail from edge to edge, '
+)
+
 # Khung ngoài không gian không có phòng điều khiển nên không mang khối
 # nhân vật; chỉ giữ phần phong cách và bảng màu cyan của tín hiệu.
 IM_STYLE_SPACE = IM_STYLE
@@ -1629,6 +1640,9 @@ ASSETS = {
             'top row and one large panel filling the whole bottom row, every '
             'gutter filled with flat solid black running edge to edge, no '
             'border around the outside of the image, '
+            'IMPORTANT: the page background behind and between the panels is '
+            'PURE BLACK #000000, the gutters are thick BLACK bars like a '
+            'printed comic page, absolutely no white page background, '
             'TOP LEFT PANEL: a tight crowd of shirt sleeved NASA engineers '
             'packed shoulder to shoulder leaning in over one desk, tense '
             'faces lit hard from below by a screen, jaws tight, eyes fixed '
@@ -1639,10 +1653,19 @@ ASSETS = {
             'desk mat below, the moment of the click frozen, '
             'BOTTOM LARGE PANEL: straight on view of a computer monitor '
             'screen filling the whole panel edge to edge, the screen showing '
-            'a glowing digital envelope graphic bursting open, bright light '
-            'rays shooting out of the opened flap, cyan and amber particles '
-            'swirling out of the burst, the burst light spilling off the '
-            'glass and reflecting across the glossy desk surface below, '
+            'a glowing digital envelope icon that is WIDE OPEN, the top flap '
+            'of the envelope folded fully back behind it like an opened '
+            'envelope on a desk, a bright letter of light rising up out of '
+            'the open mouth of the envelope, brilliant light rays exploding '
+            'outward from the opening in all directions, cyan and amber '
+            'particles swirling out of the burst, the burst light spilling '
+            'off the glass and reflecting across the glossy desk surface '
+            'below, the glowing envelope burst fills the entire screen from '
+            'edge to edge and is the only element on it, '
+            'NO blank white rectangle, NO empty white box, NO placeholder '
+            'card, NO unmarked panel anywhere on the screen or in any panel '
+            'of this page, do not draw any empty white shape at all, '
+
             + IM_CHARS
         ),
         'note': 'chuyển tiếp 8: ba ô, đám đông, tay bấm chuột, phong bì bung sáng',
@@ -1663,15 +1686,29 @@ ASSETS = {
             'recording dot sits high in the top corner, surveillance camera '
             'feed look, '
             'in the centre of the frame a stranded astronaut ' + IM_ASTRO +
-            ', stands facing the camera dead on, his helmet popped off and '
-            'clipped to his belt at the hip so his dusty tired face is fully '
-            'visible, grime on his cheeks, dust in his hair, hopeful eyes, '
-            'clearly alive, breathing, '
-            'he holds up a large blank white clipboard with both hands at '
-            'chest height, the clipboard is perfectly straight and square to '
-            'the camera, its surface is completely blank, empty, plain white, '
-            'with no lines, no writing, no header, no text of any kind, '
-            'nothing printed on the paper clip or the board, '
+            ', stands facing the camera dead on, he is BARE HEADED, no helmet '
+            'on his head, no helmet in his hands, the helmet is NOT VISIBLE '
+            'in the frame at all, his dusty tired face fully visible, grime '
+            'on his cheeks, dust in his hair, hopeful eyes, clearly alive, '
+            'breathing, '
+            'he presents a large blank white clipboard to the camera with '
+            'BOTH HANDS raised in front of his chest, one gloved hand '
+            'gripping the left side edge of the board and the other gloved '
+            'hand gripping the right side edge of the board, both arms up, '
+            'both hands clearly visible holding the board, '
+            'BOTH hands are on the board, neither hand is free, '
+            'no open palm gesture, no waving hand, no pointing hand, '
+            'no relaxed arm at his side, no second raised hand anywhere, '
+            'the board is centred directly in front of his chest and held '
+            'straight across, it faces the camera square on and fills the '
+            'middle of the frame, '
+            'the clipboard is a plain flat white sheet with a thin metal '
+            'clip along its top edge only, no brown clipboard board visible, '
+            'no wood, no leather, no folder, just the flat white sheet, '
+            'the clipboard is perfectly straight and square to the camera, '
+            'its surface is completely blank, empty, plain white, with no '
+            'lines, no writing, no header, no text of any kind, nothing '
+            'printed on the paper clip or the board, '
             'warm amber habitat lighting behind him, dust and scuff marks on '
             'the suit, shallow depth of field so the clipboard stays sharp'
         ),
@@ -1724,11 +1761,22 @@ ASSETS = {
             'dramatic backlight from the giant projection screens behind him '
             'silhouetting his shoulders and outlining his vest in bright cyan '
             'rim light, his face in shadow, tense focused atmosphere, '
+            'the screens behind him show only abstract glowing cyan and amber '
+            'shapes, soft blurred orbit arcs and empty graph panels with no '
+            'characters, no glyphs, no blocks of writing, no pseudo text, '
+            'no mock letters, no fake interface words anywhere in the image, '
+            'no EXIT sign, no sign of any kind on any wall, the only lettering '
+            'permitted in the entire image is the NASA logo on the wall, '
+            'the top left of the frame is the dark ceiling and the far wall '
+            'filled with the glowing screens, lit scenery only, '
+            'NO blank light rectangle, NO empty white box, NO placeholder '
+            'panel, NO empty sign board, NO floating flat panel anywhere in '
+            'the frame, every surface carries rendered detail or shadow, '
             + IM_CHARS
         ),
         'note': 'chuyển tiếp 11: giám đốc đập tay xuống bàn, cả phòng quay lại',
         'kind': 'scene',
-        'style': IM_STYLE_ROOM,
+        'style': IM_STYLE_NO_CORNER,
         'size': '1600x900',
     },
     'bg-im-12': {
@@ -1736,9 +1784,10 @@ ASSETS = {
             'medium close up of the NASA mission director standing behind a '
             'lectern, framed from the chest up, the lectern edge just visible '
             'at the bottom of frame, '
-            'his jaw set hard, eyes burning with fierce determination, brow '
-            'furrowed, mouth open mid sentence, one hand gripping the lectern '
-            'edge, '
+            'his jaw set hard and clenched, lips pressed in a tight firm '
+            'line, MOUTH CLOSED, not shouting, no open mouth, no bared '
+            'teeth, eyes burning with fierce determination, brow furrowed, '
+            'one hand gripping the lectern edge, '
             'harsh key light from one side carving deep black shadows across '
             'the far side of his face, the giant NASA projection screens '
             'behind him thrown far out of focus as soft glowing cyan and amber '

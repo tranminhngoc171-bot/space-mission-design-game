@@ -197,8 +197,12 @@ def process_scene(path):
         im = im.crop((0, top, w, top + new_h))
 
     im = im.resize((SCENE_W, SCENE_H), Image.LANCZOS)
-    out = OUT / path.name.replace('.png', '.jpg')
-    im.save(out, 'JPEG', quality=SCENE_QUALITY, optimize=True, progressive=True)
+    # Xuất WebP chứ không JPEG. intermission.js trỏ thẳng vào
+    # assets/art/bg-im-NN.webp, nên để JPEG ở đây thì mười ba khung chuyển
+    # tiếp không bao giờ hiện ra. WebP cũng nhẹ hơn JPEG cùng chất lượng
+    # khoảng một nửa ở tranh comic nhiều mảng màu lớn.
+    out = OUT / path.name.replace('.png', '.webp')
+    im.save(out, 'WEBP', quality=SCENE_QUALITY, method=6)
     return out, im.size
 
 
