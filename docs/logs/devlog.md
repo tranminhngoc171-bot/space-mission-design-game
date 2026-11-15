@@ -4,6 +4,22 @@ Append newest entry at the top. One entry per work session. Keep it factual: wha
 
 ---
 
+## 2026-11-15 — Giai đoạn 2: Earth Mission Control (MDL / CML 1-4)
+
+**Ngọc (agent)**
+- Thêm thư mục `phase2/` hoàn toàn độc lập với `src/`: 9 file (engine cho sẵn + i18n + bridge + 4 feature + app + css + README). Không sửa một dòng nào của Giai đoạn 1.
+- Giao tiếp hai chiều chỉ qua CustomEvent: `mars:sos-received`, `earth:dsn-command-sent`, `mars:beacon-deployed`, `phase2:goto-mars`, kèm `window.MARS_RESCUE_SHARED_STATE`.
+- Bốn hồi theo CML: telemetry + chọn KPP, trade space bốn phân khu với bốn đồng hồ biên độ, checklist RYG JPL có khoá LAUNCH, canvas quỹ đạo Trái Đất tới Sao Hỏa + sóng DSN + EDL + tổng kết NASA analogue.
+- Hai test chạy bằng node, không cần trình duyệt: `scripts/test_phase2_lifecycle.mjs` (luồng engine tới COMPLETED) và `scripts/test_phase2_dom.mjs` (shim DOM, mount đủ 8 file, kiểm tra render + khoá nút + shared state).
+- Lỗi thật tìm được khi test: đèn hiệu cắm trước mốc `PROXIMITY_WAIT` làm engine bỏ qua và sứ mệnh treo ở LAUNCHED. Sửa trong bridge: ghi nhớ và hoàn tất khi tới mốc.
+- Cân bằng đo được: ở 250 Sol chỉ 2/64 tổ hợp qua CML 4, ở 300 Sol là 6/64. Ghi vào `phase2/README.md`, không tự sửa engine cho dễ.
+
+**Next**
+- Chờ Thiện Nhân phát `mars:sos-received` từ cuối Phase 1 và nhận `earth:dsn-command-sent` cho nhiệm vụ cắm đèn hiệu.
+- Còn thiếu theo docs/12 §4: chỉ số đồng thuận ba vai trò (data + engine), dữ liệu Mission Viz cho tab Sao Hỏa.
+
+---
+
 ## 2026-11-15 — Đồng bộ theo luật agent, tách PR #6
 
 **Ngọc (agent)**

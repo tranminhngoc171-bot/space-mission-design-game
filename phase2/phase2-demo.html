@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mars Rescue · Giai đoạn 2: Earth Mission Control</title>
+<meta name="description" content="Giai đoạn 2 của Mars Rescue: thiết kế sứ mệnh giải cứu theo chuẩn NASA Mission Design Lab (CML 1-4)." />
+<link rel="stylesheet" href="phase2.css" />
+</head>
+<body data-phase1="disconnected">
+
+<header class="p2-top">
+  <div class="p2-brand">
+    <span class="p2-brand-mark">MDL</span>
+    <div>
+      <h1 class="p2-brand-title" data-i18n="app.title">PHÒNG ĐIỀU KHIỂN SỨ MỆNH TRÁI ĐẤT</h1>
+      <p class="p2-brand-sub" data-i18n="app.subtitle">NASA MISSION DESIGN LAB · CML 1-4</p>
+    </div>
+  </div>
+  <div class="p2-top-stats">
+    <div class="p2-top-stat">
+      <span class="p2-top-key">SURVIVAL</span>
+      <span class="p2-top-val p2-num" data-role="header-sol">250 Sol</span>
+    </div>
+    <div class="p2-top-stat">
+      <span class="p2-top-key">DSN LIGHT TIME</span>
+      <span class="p2-top-val p2-num" data-role="header-light">11.95 phút</span>
+    </div>
+    <span class="p2-badge is-locked" data-role="header-signal">CHỜ TÍN HIỆU</span>
+  </div>
+</header>
+
+<!-- hai tab của trò chơi: Trái Đất (Giai đoạn 2) và Sao Hỏa (giả lập Giai đoạn 1) -->
+<nav class="p2-views">
+  <button class="p2-view is-active" type="button" id="view-earth">TAB TRÁI ĐẤT · GIAI ĐOẠN 2</button>
+  <button class="p2-view" type="button" id="view-mars">TAB SAO HỎA · GIAI ĐOẠN 1 (GIẢ LẬP)</button>
+</nav>
+
+<div data-view="earth">
+<nav class="p2-tabs" data-step-tabs>
+  <button class="p2-tab" type="button" data-for="1" data-cml="CML 1-2">Hồi 1 · Mục tiêu</button>
+  <button class="p2-tab" type="button" data-for="2" data-cml="CML 3">Hồi 2 · Trade Space</button>
+  <button class="p2-tab" type="button" data-for="3" data-cml="CML 4">Hồi 3 · Kiểm duyệt</button>
+  <button class="p2-tab" type="button" data-for="4" data-cml="EDL">Hồi 4-5 · Phóng và hạ cánh</button>
+</nav>
+
+<div class="p2-devbar" aria-label="Bảng thử nghiệm độc lập">
+  <span class="p2-dev-label">BẢNG THỬ NGHIỆM</span>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-sos">Giả lập SOS từ Sao Hỏa</button>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-beacon">Giả lập đèn hiệu đã cắm</button>
+  <span class="p2-dev-sep"></span>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-step-1">1</button>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-step-2">2</button>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-step-3">3</button>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-step-4">4</button>
+  <span class="p2-dev-sep"></span>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-lang">VI / EN</button>
+  <button class="p2-btn p2-btn-sm" type="button" id="dev-reset">Chạy lại</button>
+</div>
+
+<main class="p2-stage">
+  <section class="p2-col" data-step="1">
+    <div data-phase2="cml1"></div>
+  </section>
+
+  <section class="p2-col" data-step="2" hidden>
+    <div data-phase2="cml3"></div>
+  </section>
+
+  <section class="p2-col" data-step="3" hidden>
+    <div data-phase2="cml4"></div>
+  </section>
+
+  <section class="p2-col" data-step="4" hidden>
+    <div class="p2-panel">
+      <h2 class="p2-h2">Hồi 4-5 · Phóng tàu và hạ cánh EDL</h2>
+      <p class="p2-muted">Tàu đã rời Trái Đất. Ở mốc 75% hành trình, DSN gửi lệnh yêu cầu phi hành gia trên Sao Hỏa cắm đèn hiệu dẫn đường. Đèn hiệu xong thì tàu vào chuỗi 7 phút kinh hoàng.</p>
+      <p class="p2-muted p2-tiny">Nếu đang mở độc lập (chưa nối Giai đoạn 1), dùng nút «Giả lập đèn hiệu đã cắm» ở bảng thử nghiệm phía trên.</p>
+    </div>
+  </section>
+
+  <aside class="p2-side">
+    <div data-phase2="viz" hidden></div>
+  </aside>
+</main>
+</div>
+
+<!-- Giai đoạn 1 giả lập: chỉ phát đúng ba sự kiện trong hợp đồng -->
+<section class="p2-stage p2-stage-single" data-view="mars" hidden>
+  <div data-phase1-mock></div>
+</section>
+
+<footer class="p2-foot">
+  <span class="p2-num">CML 1-4 · NASA Mission Design Lab · JPL RYG checklist</span>
+  <span class="p2-num">Phase 2 độc lập với Phase 1 · giao tiếp qua CustomEvent</span>
+</footer>
+
+<script src="phase2-engine.js"></script>
+<script src="phase2-i18n.js"></script>
+<script src="bridge-adapter.js"></script>
+<script src="feature-cml1-telemetry.js"></script>
+<script src="feature-cml3-tradespace.js"></script>
+<script src="feature-cml4-checklist.js"></script>
+<script src="feature-execution-viz.js"></script>
+<script src="phase2-app.js"></script>
+<script src="phase1-mock.js"></script>
+</body>
+</html>
