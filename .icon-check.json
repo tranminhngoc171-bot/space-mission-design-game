@@ -1,0 +1,122 @@
+{
+  "icon-mro-satellite": {
+    "mode": "RGBA",
+    "size": [
+      128,
+      128
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bbox": [
+      16,
+      43,
+      111,
+      84
+    ],
+    "margins": {
+      "left": 16,
+      "top": 43,
+      "right": 17,
+      "bottom": 44
+    },
+    "islands": 1,
+    "stray": 0,
+    "filled": 0.6041078305519897,
+    "bytes": 3016,
+    "ok": true
+  },
+  "icon-dsn-dish": {
+    "mode": "RGBA",
+    "size": [
+      128,
+      128
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bbox": [
+      23,
+      16,
+      104,
+      111
+    ],
+    "margins": {
+      "left": 23,
+      "top": 16,
+      "right": 24,
+      "bottom": 17
+    },
+    "islands": 1,
+    "stray": 0,
+    "filled": 0.7381416504223521,
+    "bytes": 5482,
+    "ok": true
+  },
+  "icon-uhf-transmitter": {
+    "mode": "RGBA",
+    "size": [
+      128,
+      128
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bbox": [
+      22,
+      16,
+      105,
+      111
+    ],
+    "margins": {
+      "left": 22,
+      "top": 16,
+      "right": 23,
+      "bottom": 17
+    },
+    "islands": 1,
+    "stray": 0,
+    "filled": 0.6258719086873811,
+    "bytes": 4774,
+    "ok": true
+  },
+  "icon-hex-packet": {
+    "mode": "RGBA",
+    "size": [
+      128,
+      128
+    ],
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "bbox": [
+      20,
+      16,
+      107,
+      111
+    ],
+    "margins": {
+      "left": 20,
+      "top": 16,
+      "right": 21,
+      "bottom": 17
+    },
+    "islands": 1,
+    "stray": 0,
+    "filled": 0.7547489413188143,
+    "bytes": 5560,
+    "ok": true
+  }
+}

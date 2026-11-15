@@ -78,6 +78,15 @@ STYLE = (
     'no background scenery, no people'
 )
 
+# Biến thể cho icon có chữ kỹ thuật hợp lệ (icon-hex-packet): bỏ "no text"
+# và thay bằng luật cho phép đúng loại ký tự được duyệt.
+STYLE_TEXT_OK = STYLE.replace(
+    'no text, no watermark,',
+    'the only text allowed is the hexadecimal glyph layer described above, '
+    'rendered large, faint and inside the object surface, '
+    'no other text, no caption, no label, no watermark,'
+)
+
 # Nền để key: model ảnh không xuất alpha thật, nên xin một nền phẳng
 # trung tính rồi tách bằng thuật toán. Xám trung tính an toàn hơn trắng
 # (vật trắng NASA) và hơn xanh lá (viền xanh bị lem vào cạnh kim loại).
@@ -148,17 +157,26 @@ ASSETS = {
     },
     'icon-hex-packet': {
         'note': 'icon: gói tin dữ liệu hex',
+        # allow_text: khối STYLE toàn cục có "no text", mà đặc tả icon này
+        # lại đòi chữ hex mờ bên trong khối. Lần sinh đầu model bỏ sạch
+        # glyph vì bị chính STYLE cấm, nên spec này tắt "no text" và thay
+        # bằng luật riêng cho phép ký tự kỹ thuật cỡ lớn.
+        'allow_text': True,
         'prompt': (
-            'a single floating translucent data packet cube as an icon, '
-            'an isometric cube with sharp clean edges, the front three faces '
-            'made of a faint glowing cyan and amber wireframe lattice over a '
-            'dark steel blue glass body, '
-            'inside the cube a dense faint swarm of hexadecimal glyph '
-            'fragments and binary data streams drift in layered depth, '
-            'glyphs are abstract glowing symbols not readable words, '
-            'small packets of light travel along the wireframe edges, '
+            'a single floating data packet cube as an icon, '
+            'a solid isometric cube with three visible faces, sharp clean '
+            'edges, dark steel blue glass panels, '
+            'every face is covered edge to edge by a bright glowing cyan '
+            'triangular wireframe lattice grid, the lattice lines are thick '
+            'and clearly visible on all three faces with bright cyan nodes at '
+            'every intersection, the lattice is the dominant surface feature, '
+            'behind the lattice on each face sit very large faint hexadecimal '
+            'characters spelling digit and letter pairs such as 4F 2A 9C E1 '
+            '7B 0D, big chunky glyphs readable at small icon size, drawn in '
+            'pale cyan and amber at low opacity, three glyph rows per face, '
+            'a continuous glowing amber edge highlight runs along every one '
+            'of the nine visible silhouette edges of the cube, '
             'one corner of the cube emits a soft data-screen cyan glow, '
-            'a thin amber outline highlights the silhouette edges, '
             'clean crisp lineart on all edges, painterly atmospheric glow, '
             'cool cyan key light with warm amber rim light, '
             'whole cube fully inside the frame with margin on all sides'
@@ -250,7 +268,8 @@ def generate(key, name, spec, force=False):
         return True
 
     print(f'  [{name}] {spec["note"]}')
-    full_prompt = spec['prompt'] + ', ' + KEY_BG + ', ' + STYLE
+    style = STYLE_TEXT_OK if spec.get('allow_text') else STYLE
+    full_prompt = spec['prompt'] + ', ' + KEY_BG + ', ' + style
     (RAW_DIR / f'{name}.prompt.txt').write_text(full_prompt, encoding='utf-8')
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
@@ -403,7 +422,7 @@ def process_icon(name):
     """Tách nền, dò bbox vật thể, canh giữa, resize 128x128, vẽ viền 2px.
 
     Viền vẽ SAU khi resize, và vẽ bằng cách giãn chính silhouette của vật
-    thể 2px rồi tô màu tối phía dưới — không vẽ khung chữ nhật quanh canvas,
+    thể 2px rồi tô màu tối phía dưới, không vẽ khung chữ nhật quanh canvas,
     vì như vậy bốn góc sẽ hết trong suốt (đặc tả đòi alpha = 0 ở bốn góc).
     """
     src = RAW_DIR / f'{name}.png'
