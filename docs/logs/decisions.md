@@ -12,6 +12,16 @@ Format:
 
 ---
 
+## 2026-11-15 — Tách PR #6 theo luật agent, không ghi đè mission.css
+**Context:** PR #6 gộp engine, UI skeleton và CSS. Luật agent mục 7 yêu cầu tách phần đã vào `main` ra, bỏ `index.html`/`ui.js`, và `src/css/mission.css` trên `main` đã có bản riêng dài 424 dòng với header `Owner: @bersious`.
+**Decision:** PR mới `feat/engine-extras` chỉ mang `scripts/smoke_engine.mjs` cùng mục log. Giữ nguyên `mission.css` của `main`, không ghi đè dù luật mục 1 xếp file này vào vùng Ngọc.
+**Consequence:** Việc còn lại duy nhất của nhánh cũ là xoá nó. Cần chốt ai giữ `mission.css` trước khi có ai sửa tiếp, vì tài liệu và header file đang nói hai điều khác nhau.
+
+## 2026-11-15 — Engine tự lấy thời lượng từ scenario
+**Context:** Gọi `computeMission` với design thiếu `duration_months` làm ngân sách, tuổi thọ và điểm tổng ra `NaN`/`null`.
+**Decision:** Giữ bản sửa trong `src/engine.js`: dùng `design.duration_months` khi hợp lệ, ngược lại lấy `scenario.duration_months`. Hợp đồng hàm không đổi.
+**Consequence:** Bên giao diện không bắt buộc phải mang trường thời lượng khi gọi engine. Ngược lại, design truyền thời lượng riêng vẫn ghi đè được, nên test cân bằng phải nêu rõ nó dùng thời lượng nào.
+
 ## 2026-11-15 — No 3D, no realtime multiplayer
 **Context:** 24 hours left, nothing built. 3D needs 10–16 h before any graded feature exists; realtime multiplayer dies publicly if a socket misbehaves during a 5-minute demo.
 **Decision:** 2D "Mission Control" UI. Multiplayer = hot-seat 4 roles + shareable design URL.
