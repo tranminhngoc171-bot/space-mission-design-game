@@ -212,10 +212,29 @@ có thành `'1'` và nút Thiết kế tàu có mở khoá.
 Log ghi "All 6 callouts are now inside the stage at distinct heights",
 tức là sub đã sửa nhưng chưa soi vision xác nhận. Cần chụp màn hình kiểm.
 
-**5. Hai chỗ chữ "Sắp xong" cứng trong bộ đếm tiến trình (sub 5)**
-Đang sửa dở thì dừng. Đây là chuỗi tiếng Việt viết cứng, không dịch theo
-ngôn ngữ. Cần tìm trong `preloader.js` hoặc `index.html` và đưa vào bảng
-dịch.
+**5. Hai chỗ chữ "Sắp xong" cứng trong bộ đếm tiến trình (sub 5) — ĐÃ SỬA ✅**
+Hai fallback `'Sắp xong'` trong `index.html` (settle và __pbProgress) đã
+đổi sang hàm `txt(key)` đọc `smdg.lang` trực tiếp, cộng thêm script dịch
+ngay sau khung `#pb` để dòng đầu tiên cũng đúng ngôn ngữ. `preloader.js`
+đổi `'Almost ready'` thành `'Almost there'` cho khớp bản nhúng. Đã test:
+EN thấy "Almost there", VI thấy "Sắp xong" ở cả trạng thái đầu và cuối.
+
+**1. Menu điện thoại hộp rỗng — ĐÃ SỬA ✅**
+`bottom: auto` đã có sẵn trong nhánh này. Còn 38px đệm dọc của
+`.menu-actions::before` làm hộp cao hơn cụm nút; đã thu xuống 9px mỗi
+bên trong media 620px. Đo 390x844: hộp 222px vs cụm nút 204px (chênh
+18px, dưới ngưỡng 24px).
+
+**Lỗi mới phát hiện trong đợt kiểm đầu game (16/11):**
+
+**6. `playLaunch()` lần bị vượt qua không bao giờ resolve — ĐÃ SỬA ✅**
+Token chống chạy hai lần im luôn các timer của lần cũ, kể cả resolve,
+nên Promise cũ treo vĩnh viễn. Đã cho resolve ngay khi bị vượt qua.
+
+**7. Cổng chặn che video mở đầu 200ms — ĐÃ SỬA ✅**
+`gate()` resolve trước khi lớp cổng (z240) mờ xong, video mở đầu (z95)
+bị tấm màn xám đè suốt 200ms. `gateHide()` giờ trả Promise chờ gỡ xong
+và `gate()` await nó.
 
 ### Việc chưa sub nào làm xong
 
