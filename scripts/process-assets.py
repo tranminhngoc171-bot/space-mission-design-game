@@ -43,6 +43,35 @@ PANEL_QUALITY = 82
 # Khung 11 cố ý có dải đen dày hai phía làm mí mắt, không phải lỗi viền.
 PANEL_KEEP_BANDS = {'screen-11'}
 
+# ---- sprite trong suốt của màn căn cứ ----
+# Ảnh gốc của sprite để ở thư mục riêng, KHÔNG nằm trong gen/: nếu để chung
+# thì vòng quét gen/icon-*.png ở main() sẽ đem icon trong suốt đi qua
+# process_icon (đệm nền tối đục, vẽ khung chữ nhật) và xoá mất alpha.
+SPRITE_SRC = ROOT / 'src' / 'assets' / 'gen-sprites'
+
+# Nhân vật: cao 512px cho tư thế đứng, giữ tỉ lệ người đứng. Chiều rộng suy
+# ra từ khung bao silhouette nên ba tư thế cùng tỉ lệ, khác bề ngang tuỳ dáng.
+#
+# Tư thế NGỒI BÓ GỐI không được ép cao 512 như tư thế đứng: ảnh gốc luôn là
+# một nhân vật lấp đầy khung, ép cùng chiều cao thì người ngồi bị phóng to
+# gấp rưỡi và đứng cạnh người đứng trông như người khổng lồ. Người ngồi bó
+# gối cao khoảng 0.70 lần người đứng, nên đặt riêng chiều cao đích.
+CHAR_H = 512
+CHAR_H_PER = {
+    'char-healthy': 512,
+    'char-cold': 505,      # đứng nhưng hơi khom, thấp hơn người đứng thẳng
+    'char-tired': 358,     # ngồi bó gối: 0.70 lần tư thế đứng
+}
+# Chừa 2px trong suốt quanh viền để không pixel nào chạm mép khung.
+CHAR_MARGIN = 2
+CHAR_QUALITY = 90
+
+# Icon vật phẩm mới dùng đúng đặc tả icon hiện có: 128x128, đệm 8px, vật thể
+# chiếm 82 phần trăm khung trong, viền tối 2px bám silhouette.
+ICON_FILL = 0.82
+OUTLINE_W = 2
+OUTLINE_RGB = (10, 14, 20)
+
 
 def find_watermark(im, search_ratio=0.22):
     """Dò watermark ngôi sao ở góc dưới phải.
@@ -249,6 +278,243 @@ def process_icon(path):
     return out, canvas.size
 
 
+def _sample_bg(rgb):
+    """Màu nền: trung vị của dải viền ngoài cùng. Trung vị chịu được vài
+    pixel vật thể lọt ra mép, còn trung bình thì bị kéo lệch."""
+    h, w, _ = rgb.shape
+    band = max(3, min(w, h) // 40)
+    edges = np.concatenate([
+        rgb[:band].reshape(-1, 3), rgb[-band:].reshape(-1, 3),
+        rgb[:, :band].reshape(-1, 3), rgb[:, -band:].reshape(-1, 3),
+    ])
+    return np.median(edges, axis=0)
+
+
+def _components(mask):
+    """Nhãn thành phần liên thông 4 hướng, trả list (diện tích, ys, xs)."""
+    from collections import deque
+
+    h, w = mask.shape
+    seen = np.zeros((h, w), bool)
+    out = []
+    for sy in range(h):
+        if not mask[sy].any():
+            continue
+        for sx in np.nonzero(mask[sy] & ~seen[sy])[0]:
+            if seen[sy, sx]:
+                continue
+            q = deque([(sy, int(sx))])
+            seen[sy, sx] = True
+            ys, xs = [], []
+            while q:
+                y, x = q.popleft()
+                ys.append(y)
+                xs.append(x)
+                for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                    if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not seen[ny, nx]:
+                        seen[ny, nx] = True
+                        q.append((ny, nx))
+            out.append((len(ys), np.array(ys), np.array(xs)))
+    return out
+
+
+def matte_background(im, keep_ratio=0.10):
+    """Tách nền xám phẳng thành alpha, trả ảnh RGBA.
+
+    Cùng nguyên lý với gen-icon-sprite.py: model không xuất alpha thật nên
+    phải xin nền xám phẳng rồi đo khoảng cách màu từng pixel tới màu nền,
+    lấy ngưỡng mềm để cạnh không răng cưa.
+
+    Khác một chỗ quan trọng: ở đây giữ MỌI thành phần liên thông đủ lớn chứ
+    không chỉ thành phần lớn nhất. Nhân vật đứng có thể bị đứt ở cổ tay hay
+    mắt cá do ngưỡng, bỏ phần nhỏ là mất bàn tay. Rác lơ lửng của model
+    (chấm sáng, mảnh vụn) thì nhỏ hơn ngưỡng nên vẫn bị loại.
+    """
+    rgb = np.array(im.convert('RGB')).astype(np.float32)
+    h, w, _ = rgb.shape
+    bg = _sample_bg(rgb)
+
+    dist = np.sqrt(((rgb - bg) ** 2).sum(axis=2))
+    lo, hi = 14.0, 40.0
+    alpha = np.clip((dist - lo) / (hi - lo), 0.0, 1.0)
+
+    solid = alpha > 0.5
+    comps = _components(solid)
+    if comps:
+        biggest = max(c[0] for c in comps)
+        keep = np.zeros((h, w), bool)
+        for n, ys, xs in comps:
+            if n >= biggest * keep_ratio:
+                keep[ys, xs] = True
+        alpha = alpha * keep.astype(np.float32)
+
+    # Lấp lỗ bên trong silhouette: lỗ alpha 0 nằm trong thân (khoảng trống
+    # giữa cánh tay và sườn, khe giữa hai chân khi đứng khép) sẽ thành đốm
+    # trong suốt nhìn xuyên qua người khi đặt sprite lên nền tối.
+    #
+    # Phải lấp bằng cách loang từ MÉP ảnh vào chứ không phải giãn mặt nạ ra
+    # rồi lấy phần bù: bản trước giãn mặt nạ 46 vòng nên cả vành nền rộng
+    # 46px quanh người bị coi là "lỗ bên trong" và bị tô alpha đục, sprite
+    # ra một quầng xám hình bóng người. Loang từ mép chỉ chạm tới vùng nền
+    # thật sự thông ra ngoài, lỗ kín thì không tới được.
+    from collections import deque
+
+    bgmask = alpha < 0.05
+    outside = np.zeros((h, w), bool)
+    dq = deque()
+    for x in range(w):
+        for y in (0, h - 1):
+            if bgmask[y, x] and not outside[y, x]:
+                outside[y, x] = True
+                dq.append((y, x))
+    for y in range(h):
+        for x in (0, w - 1):
+            if bgmask[y, x] and not outside[y, x]:
+                outside[y, x] = True
+                dq.append((y, x))
+    while dq:
+        y, x = dq.popleft()
+        for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+            if 0 <= ny < h and 0 <= nx < w and bgmask[ny, nx] and not outside[ny, nx]:
+                outside[ny, nx] = True
+                dq.append((ny, nx))
+
+    holes = bgmask & ~outside
+    # Chỉ lấp lỗ NHỎ (vết đứt của ngưỡng, khe hở vài chục pixel). Lỗ lớn là
+    # khoảng trống thật giữa cánh tay và sườn, phải để trong suốt; lấp nó
+    # thì bóng người thành một khối đặc.
+    if holes.any():
+        for n, ys, xs in _components(holes):
+            if n <= max(64, int(h * w * 0.004)):
+                alpha[ys, xs] = 1.0
+
+    # Khử màu nền còn sót ở rìa và trong lỗ: pixel có alpha nhưng màu vẫn
+    # gần màu xám nền sẽ hiện thành viền xám khi đặt lên panel tối. Lan màu
+    # của pixel vật thể thật vào các pixel đó vài vòng.
+    edge = (alpha > 0.05) & (dist < 45)
+    if edge.any():
+        known = (alpha > 0.05) & ~edge
+        col = rgb.copy()
+        for _ in range(10):
+            if not edge.any():
+                break
+            acc = np.zeros_like(col)
+            cnt = np.zeros((h, w), np.float32)
+            for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                ys = slice(max(0, dy), h + min(0, dy))
+                xs_ = slice(max(0, dx), w + min(0, dx))
+                ys2 = slice(max(0, -dy), h + min(0, -dy))
+                xs2 = slice(max(0, -dx), w + min(0, -dx))
+                acc[ys, xs_] += col[ys2, xs2] * known[ys2, xs2][..., None]
+                cnt[ys, xs_] += known[ys2, xs2]
+            fill = edge & (cnt > 0)
+            if not fill.any():
+                break
+            col[fill] = acc[fill] / cnt[fill][:, None]
+            known = known | fill
+            edge = edge & ~fill
+        rgb = col
+
+    arr = np.dstack([rgb, alpha * 255.0]).astype(np.uint8)
+    res = Image.fromarray(arr, 'RGBA')
+    a = res.getchannel('A').filter(ImageFilter.GaussianBlur(0.6))
+    res.putalpha(a)
+    return res
+
+
+def alpha_bbox(im, thresh=24):
+    a = np.array(im.getchannel('A'))
+    ys, xs = np.nonzero(a > thresh)
+    if len(ys) == 0:
+        return None
+    return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
+
+
+def process_char(path):
+    """Sprite nhân vật: tách nền, cắt sát silhouette, ép chiều cao đích.
+
+    Chiều cao đích lấy theo tên file (CHAR_H_PER), không dùng một con số cho
+    cả ba: tư thế ngồi bó gối thấp hơn hẳn tư thế đứng, ép cùng chiều cao
+    là biến người ngồi thành người khổng lồ khi đặt cạnh nhau.
+    """
+    im = Image.open(path)
+    rgba = trim_watermark(matte_background(im))
+    # trim_watermark cắt mép phải/đáy; trên ảnh RGBA thì nó vẫn chạy được vì
+    # find_watermark tự convert sang RGB. Cắt xong mới dò khung bao.
+
+    box = alpha_bbox(rgba)
+    if not box:
+        raise RuntimeError(f'{path.stem}: tách nền ra rỗng')
+    rgba = rgba.crop(box)
+
+    # Đệm 2px trong suốt đều bốn phía: khung bao vừa khít silhouette thì
+    # pixel đầu tiên và cuối cùng nằm đúng mép, kiểm alpha ở góc vẫn qua
+    # nhưng đặt sprite sát nhau trong game sẽ chạm vào hình bên cạnh.
+    w, h = rgba.size
+    padded = Image.new('RGBA', (w + CHAR_MARGIN * 2, h + CHAR_MARGIN * 2), (0, 0, 0, 0))
+    padded.paste(rgba, (CHAR_MARGIN, CHAR_MARGIN))
+    rgba = padded
+
+    w, h = rgba.size
+    target_h = CHAR_H_PER.get(path.stem, CHAR_H)
+    new_w = max(1, round(w * (target_h / h)))
+    rgba = rgba.resize((new_w, target_h), Image.LANCZOS)
+
+    out = OUT / path.name.replace('.png', '.webp')
+    rgba.save(out, 'WEBP', quality=CHAR_QUALITY, method=6)
+    return out, rgba.size
+
+
+def process_icon_sprite(path):
+    """Icon vật phẩm mới: y hệt đặc tả icon hiện có nhưng nền trong suốt.
+
+    Khác process_icon ở hai điểm: không đệm nền tối (giữ alpha), và viền tối
+    2px vẽ bằng cách giãn chính silhouette chứ không vẽ khung chữ nhật quanh
+    canvas, vì khung chữ nhật sẽ làm bốn góc hết trong suốt.
+    """
+    im = Image.open(path)
+    rgba = trim_watermark(matte_background(im))
+
+    box = alpha_bbox(rgba)
+    if not box:
+        raise RuntimeError(f'{path.stem}: tách nền ra rỗng')
+    rgba = rgba.crop(box)
+
+    w, h = rgba.size
+    side = max(w, h)
+    sq = Image.new('RGBA', (side, side), (0, 0, 0, 0))
+    sq.paste(rgba, ((side - w) // 2, (side - h) // 2))
+
+    inner = int((ICON_SIZE - ICON_PAD * 2) * ICON_FILL)
+    sq = sq.resize((inner, inner), Image.LANCZOS)
+
+    canvas = Image.new('RGBA', (ICON_SIZE, ICON_SIZE), (0, 0, 0, 0))
+    off = (ICON_SIZE - inner) // 2
+    canvas.paste(sq, (off, off))
+
+    a = np.array(canvas.getchannel('A'))
+    mask = a > 40
+    grown = mask.copy()
+    for _ in range(OUTLINE_W):
+        g = grown.copy()
+        g[1:, :] |= grown[:-1, :]
+        g[:-1, :] |= grown[1:, :]
+        g[:, 1:] |= grown[:, :-1]
+        g[:, :-1] |= grown[:, 1:]
+        grown = g
+    ring = grown & ~mask
+    arr = np.array(canvas)
+    arr[ring, 0] = OUTLINE_RGB[0]
+    arr[ring, 1] = OUTLINE_RGB[1]
+    arr[ring, 2] = OUTLINE_RGB[2]
+    arr[ring, 3] = 255
+    canvas = Image.fromarray(arr, 'RGBA')
+
+    out = OUT / path.name.replace('.png', '.webp')
+    canvas.save(out, 'WEBP', quality=ICON_QUALITY, method=6)
+    return out, canvas.size
+
+
 def fill_letterbox(im, skip=False):
     """Xoá dải đen tuyền ở mép do model tự vẽ thêm.
 
@@ -354,8 +620,8 @@ def main():
 
     ap = argparse.ArgumentParser(description='Chuẩn hoá ảnh sinh ra từ model')
     ap.add_argument(
-        '--only', choices=['scenes', 'icons', 'panels'],
-        help='chỉ xử lý một nhóm, mặc định xử lý cả ba',
+        '--only', choices=['scenes', 'icons', 'panels', 'chars', 'iconsprite'],
+        help='chỉ xử lý một nhóm, mặc định xử lý cả năm',
     )
     args = ap.parse_args()
 
@@ -364,12 +630,25 @@ def main():
     all_scenes = sorted(SRC.glob('bg-*.png'))
     all_icons = sorted(SRC.glob('icon-*.png'))
     all_panels = sorted(SRC.glob('screen-*.png'))
+    # Sprite nằm ở thư mục riêng, xem SPRITE_SRC. Ảnh popup-* cũng ở đó vì
+    # chúng không phải cảnh màn chơi mà là tranh trong hộp thoại.
+    all_chars = sorted(SPRITE_SRC.glob('char-*.png')) if SPRITE_SRC.is_dir() else []
+    all_iconsprite = sorted(SPRITE_SRC.glob('icon-*.png')) if SPRITE_SRC.is_dir() else []
+    all_popups = sorted(SPRITE_SRC.glob('popup-*.png')) if SPRITE_SRC.is_dir() else []
 
     scenes = [] if args.only not in (None, 'scenes') else all_scenes
     icons = [] if args.only not in (None, 'icons') else all_icons
     panels = [] if args.only not in (None, 'panels') else all_panels
+    chars = [] if args.only not in (None, 'chars') else all_chars
+    iconsprites = [] if args.only not in (None, 'iconsprite') else all_iconsprite
+    # Tranh popup xử lý như khung truyện: 16:9, WebP, cắt tâm. Gộp vào danh
+    # sách panel để dùng chung process_panel.
+    # Không lọc theo --only panels: popup là bộ art màn căn cứ, chạy riêng
+    # sẽ dễ quên. Chỉ bỏ qua khi người dùng đã chỉ định nhóm khác.
+    popups = all_popups if args.only in (None, 'panels') else []
 
-    print(f'Xử lý {len(scenes)} ảnh nền, {len(icons)} icon và {len(panels)} khung truyện')
+    print(f'Xử lý {len(scenes)} ảnh nền, {len(icons)} icon, {len(panels)} khung truyện, '
+          f'{len(chars)} sprite nhân vật, {len(iconsprites)} icon sprite, {len(popups)} tranh popup')
     print('')
 
     total_before = 0
@@ -393,6 +672,24 @@ def main():
         total_after += out.stat().st_size
         print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
 
+    for p in popups:
+        total_before += p.stat().st_size
+        out, size = process_panel(p)
+        total_after += out.stat().st_size
+        print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
+
+    for p in chars:
+        total_before += p.stat().st_size
+        out, size = process_char(p)
+        total_after += out.stat().st_size
+        print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
+
+    for p in iconsprites:
+        total_before += p.stat().st_size
+        out, size = process_icon_sprite(p)
+        total_after += out.stat().st_size
+        print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
+
     # Ghi manifest để phía web biết chính xác từng file kèm kích thước,
     # khỏi phải mò đường dẫn hay đoán ảnh nào đã xử lý.
     # Quét thẳng thư mục ra thay vì dựa vào danh sách vừa xử lý: khi chạy
@@ -403,26 +700,62 @@ def main():
         'scenes': [],
         'icons': [],
         'panels': [],
+        'chars': [],
+        'popups': [],
     }
 
-    def entry(path, w, h):
-        return {
+    # Icon do gen-icon-sprite.py ghi vào manifest có thêm cờ 'transparent' và
+    # 'note'. Dựng lại danh sách icons từ đĩa sẽ nuốt mất hai trường đó, nên
+    # đọc manifest cũ rồi giữ lại phần phụ trợ theo id.
+    old_icons = {}
+    old_path = OUT / 'asset-manifest.json'
+    if old_path.exists():
+        try:
+            old = __import__('json').loads(old_path.read_text(encoding='utf-8'))
+            old_icons = {i.get('id'): i for i in old.get('icons', [])}
+        except Exception:
+            old_icons = {}
+
+    def entry(path, w, h, extra=None):
+        e = {
             'id': path.stem,
             'path': f'assets/art/{path.name}',
             'width': w,
             'height': h,
             'bytes': path.stat().st_size,
         }
+        if extra:
+            e.update(extra)
+        return e
 
     # Cảnh và icon từng được xuất JPEG ở bản cũ, nay là WebP. Lấy file nào
     # thực sự có trên đĩa, ưu tiên WebP, để manifest không trỏ vào file ma.
+    # Nếu cả hai cùng tồn tại thì chỉ ghi WebP, nếu không manifest sẽ có hai
+    # mục trùng id cho cùng một cảnh.
+    scene_files = {}
     for p in sorted(OUT.glob('bg-*')):
-        if p.suffix.lower() in ('.webp', '.jpg'):
-            manifest['scenes'].append(entry(p, SCENE_W, SCENE_H))
+        if p.suffix.lower() not in ('.webp', '.jpg'):
+            continue
+        cur = scene_files.get(p.stem)
+        if cur is None or (p.suffix.lower() == '.webp' and cur.suffix.lower() != '.webp'):
+            scene_files[p.stem] = p
+    for p in sorted(scene_files.values()):
+        manifest['scenes'].append(entry(p, SCENE_W, SCENE_H))
     for p in sorted(OUT.glob('icon-*.webp')):
-        manifest['icons'].append(entry(p, ICON_SIZE, ICON_SIZE))
+        prev = old_icons.get(p.stem, {})
+        extra = {k: v for k, v in prev.items() if k in ('transparent', 'note')}
+        with Image.open(p) as im:
+            extra['transparent'] = im.mode == 'RGBA'
+        manifest['icons'].append(entry(p, ICON_SIZE, ICON_SIZE, extra))
     for p in sorted(OUT.glob('screen-*.webp')):
         manifest['panels'].append(entry(p, SCENE_W, SCENE_H))
+    for p in sorted(OUT.glob('popup-*.webp')):
+        manifest['popups'].append(entry(p, SCENE_W, SCENE_H))
+    for p in sorted(OUT.glob('char-*.webp')):
+        with Image.open(p) as im:
+            w, h = im.size
+            alpha = im.mode == 'RGBA'
+        manifest['chars'].append(entry(p, w, h, {'transparent': alpha}))
 
     manifest_path = OUT / 'asset-manifest.json'
     manifest_path.write_text(
