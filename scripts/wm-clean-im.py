@@ -131,7 +131,13 @@ def inpaint_diffuse(im, iters=900):
     mask[y0:y1, x0:x1] = 255
 
     n_pix = int((mask > 0).sum())
-    out = cv2.inpaint(a, mask, 3, cv2.INPAINT_TELEA)
+    # INPAINT_NS (Navier-Stokes) voi ban kinh 11 cho ket qua sach nhat.
+    # Da thu bon bien the (telea 3, telea 7, ns 5, ns 11) tren khung 02
+    # va 05: telea de lai vet mo ro o vung mat nguoi va to giay, ns 11
+    # lap kin khong con vet. Ban kinh lon la diem mau: ns lay trung binh
+    # theo huong dong chay cua gradient tren vong tron rong, nen rong
+    # hon thi vung lap muon hon va khong lo hinh chu nhat.
+    out = cv2.inpaint(a, mask, 11, cv2.INPAINT_NS)
 
     # Them hat phim nhe de vung lap khong nhuan hon canh quanh.
     rng = np.random.default_rng(7)
