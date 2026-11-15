@@ -143,7 +143,10 @@
   stroke: var(--ok);
   stroke-width: 10;
   stroke-linecap: round;
-  transition: stroke var(--st-dur-fast);
+  /* Không đặt transition cho stroke: Chrome có lỗi giữ nguyên màu cũ
+     khi transition stroke của SVG nhận giá trị từ biến CSS, khiến
+     vòng cung đỏ/vàng vẫn hiện xanh. Đổi màu tức thì là đúng ý đồ
+     và cũng hợp chế độ giảm chuyển động. */
 }
 
 .fg-gauge.is-fail .fg-arc-val { stroke: var(--fail); }
@@ -169,8 +172,14 @@
 
 .fg-needle {
   stroke: var(--amber);
-  stroke-width: 3;
+  stroke-width: 3.4;
   stroke-linecap: round;
+}
+
+/* Quầng tối mảnh dưới kim để kim nổi rõ trên cả vòng cung nền lẫn
+   vòng cung giá trị, không bị chìm khi giá trị đang ở mức xanh. */
+.fg-needle-g {
+  filter: drop-shadow(0 0 1.5px rgba(7, 9, 13, .95));
 }
 
 .fg-hub {
@@ -179,16 +188,19 @@
   stroke-width: 2;
 }
 
-/* Số lớn đặt GIỮA vòng cung, không lệch. */
+/* Số lớn đặt trong lòng vòng cung, canh giữa theo chiều ngang. Kim
+   có thể chĩa xuống tới y = 88 trong hệ toạ độ 140 của SVG, nên
+   khối số bắt đầu ngay dưới mốc đó: không bao giờ đè lên kim ở bất
+   kỳ góc nào. */
 .fg-readout {
   position: absolute;
-  top: calc(12px + 50% + 14px);  /* 12px đệm trên + giữa đồng hồ + dịch nhẹ xuống */
+  top: 102px;      /* 12px đệm thẻ + 90px trong hệ SVG */
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
+  gap: 2px;
   pointer-events: none;
   text-align: center;
 }
@@ -238,8 +250,12 @@
 
 .fg-threshold {
   margin: 2px 0 0;
+  min-height: 2.6em;   /* giữ chỗ hai dòng để nhãn ngưỡng không đẩy
+                          các thẻ lệch chân nhau */
   font-size: .68rem;
+  line-height: 1.3;
   color: var(--tx-dim);
+  text-align: center;
 }
 
 .fg-threshold-val {
@@ -437,6 +453,7 @@
 }
 
 .fg-launch-btn {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -490,20 +507,21 @@
   opacity: .75;
 }
 
+/* Ổ khoá đặt sát mép phải nút, canh giữa theo chiều dọc, để nhãn
+   chữ luôn ở giữa nút dù có khoá hay không. */
 .fg-launch-lock {
   position: absolute;
+  top: 50%;
+  right: 16px;
   display: none;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  opacity: .85;
 }
 
-/* Khoá: hiện ổ khoá bên cạnh nhãn, nút mờ đi. */
-.fg-launch-btn:disabled .fg-launch-lock {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-left: 8px;
-  vertical-align: middle;
-  opacity: .8;
-}
+/* Khoá: hiện ổ khoá, nút đã mờ sẵn ở trạng thái :disabled. */
+.fg-launch-btn:disabled .fg-launch-lock { display: block; }
 
 .fg-launch-btn.is-firing {
   animation: fg-firing .5s var(--st-ease-out);
@@ -558,6 +576,7 @@
     padding: 10px 6px 8px;
   }
   .fg-dial { width: 120px; }
+  .fg-readout { top: 88px; }   /* 10px đệm + 78px trong hệ SVG */
   .fg-value { font-size: 1.15rem; }
   .fg-switch { flex-wrap: wrap; }
   .fg-sw-text { flex-basis: 100%; }
