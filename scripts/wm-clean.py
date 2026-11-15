@@ -77,7 +77,10 @@ def clone_patch(im, dx=-150, dy=-90, feather=9):
 def main():
     DST.mkdir(parents=True, exist_ok=True)
     dbg = '--debug' in sys.argv
-    for p in sorted(SRC.glob('ending_*.png')):
+    # Hai họ tên tranh kết thúc: ending_ (tám cảnh thua) và true-ending-
+    # (năm cảnh thắng). Cùng vị trí ngôi sao nên dùng chung một mặt nạ.
+    targets = sorted(SRC.glob('ending_*.png')) + sorted(SRC.glob('true-ending-*.png'))
+    for p in targets:
         im = Image.open(p).convert('RGB')
         out = clone_patch(im)
         out.save(DST / p.name)

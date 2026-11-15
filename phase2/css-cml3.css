@@ -28,10 +28,11 @@
   font-family: var(--st-font-body);
   font-size: var(--st-size-base);
   color: var(--tx);
-  background:
-    radial-gradient(110% 70% at 12% 0%, color-mix(in srgb, var(--cyan) 10%, transparent), transparent 58%),
-    radial-gradient(90% 60% at 88% 8%, color-mix(in srgb, var(--amber) 8%, transparent), transparent 56%),
-    var(--bg-void);
+  /* Nền phải trong suốt: ảnh xưởng lắp ráp nằm ở .cml3-stage::before,
+     nền đặc ở đây sẽ phủ kín nó, nên màn chỉ còn một khối màu.
+     The background has to stay transparent: the bay artwork lives in
+     .cml3-stage::before, and an opaque fill here paints over it. */
+  background: transparent;
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -342,7 +343,10 @@
   flex-direction: column;
   border: 1px solid var(--line-strong);
   border-radius: var(--cml3-radius);
-  background: linear-gradient(178deg, var(--bg-panel), var(--bg-deep) 62%, var(--bg-void));
+  background: linear-gradient(178deg,
+    color-mix(in srgb, var(--bg-panel) 72%, transparent),
+    color-mix(in srgb, var(--bg-deep) 58%, transparent) 62%,
+    transparent);
   overflow: hidden;
   min-width: 0;
 }

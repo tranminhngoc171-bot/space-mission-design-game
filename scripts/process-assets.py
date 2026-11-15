@@ -865,6 +865,7 @@ def main():
         'chars': [],
         'popups': [],
         'endings': [],
+        'trueEndings': [],
     }
 
     # Icon do gen-icon-sprite.py ghi vào manifest có thêm cờ 'transparent' và
@@ -929,6 +930,15 @@ def main():
         with Image.open(p) as im:
             w, h = im.size
         manifest['endings'].append(entry(p, w, h))
+
+    # Tranh kết thúc thắng là một dải riêng, không trộn vào 'endings': màn
+    # kết thúc thua đọc 'endings' theo đúng thứ tự tám cảnh, gộp thêm vào
+    # đó sẽ làm hỏng chuỗi. Tên true-ending-01..09 sắp theo bảng chữ cái
+    # đã đúng thứ tự khung nên chỉ cần sorted().
+    for p in sorted(OUT.glob('true-ending-*.webp')):
+        with Image.open(p) as im:
+            w, h = im.size
+        manifest['trueEndings'].append(entry(p, w, h))
     for p in sorted(OUT.glob('char-*.webp')):
         with Image.open(p) as im:
             w, h = im.size

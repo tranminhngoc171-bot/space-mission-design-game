@@ -1225,6 +1225,7 @@ function buildState() {
       life_support: state.selection.life_support,
       shielding: state.selection.shielding,
       supplies: state.selection.supplies,
+      trajectory: state.selection.trajectory || null,
       counts: Object.assign({}, state.counts),
       moduleIds: design.ids.slice(),
     },
