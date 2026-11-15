@@ -41,9 +41,13 @@ DST = ROOT / 'src' / 'assets' / 'gen-clean'
 WM_X = 0.930
 WM_Y = 0.868
 # Ban kinh vung can che theo ti le (rong, cao). Canh ngang ngoi sao dai
-# nhat khoang 55px tren 1376px, cong quang mo lay 3.4% va 5.2%.
-WM_RX = 0.040
-WM_RY = 0.052
+# nhat do duoc khoang 55px DUONG KINH tren anh rong 1376px, tuc ban kinh
+# 27px. Cong quang mo lay ban kinh 30px (2.2% rong) va 23px (3.0% cao).
+# Ban cu de 0.040/0.052 la ban kinh 55px, tuc mat na rong 110px, gap doi
+# ngoi sao that: tren nen den thi khong sao, nhung tren tranh co net ve no
+# xoa mat mot mang to hon can thiet va lo vung nhoe.
+WM_RX = 0.022
+WM_RY = 0.030
 
 # Duoi nguong nay coi la nen phang (le den). Le den that co std gan 0;
 # vung co net ve luon vuot xa nguong nay.
