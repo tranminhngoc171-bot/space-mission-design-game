@@ -13,6 +13,7 @@ màn hình, và tổng dung lượng phình to.
 Chạy: python scripts/process-assets.py
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -33,6 +34,14 @@ SCENE_QUALITY = 82
 ICON_SIZE = 128
 ICON_PAD = 8
 ICON_QUALITY = 88
+
+# Khung truyện tranh của màn mở đầu: cùng khổ 16:9 với ảnh nền nhưng xuất
+# WebP chất lượng 82 thay vì JPEG, vì tranh comic có mảng màu lớn và nét
+# mực sắc, WebP giữ nét đen tốt hơn JPEG ở cùng dung lượng.
+PANEL_QUALITY = 82
+
+# Khung 11 cố ý có dải đen dày hai phía làm mí mắt, không phải lỗi viền.
+PANEL_KEEP_BANDS = {'screen-11'}
 
 
 def find_watermark(im, search_ratio=0.22):
@@ -240,18 +249,127 @@ def process_icon(path):
     return out, canvas.size
 
 
+def fill_letterbox(im, skip=False):
+    """Xoá dải đen tuyền ở mép do model tự vẽ thêm.
+
+    Vì sao không cắt bỏ: cắt rồi ép lại 16:9 là phải phóng hoặc cắt bên,
+    làm lệch bố cục (khung 12 có Hab sát mép trái, cắt bên là mất Hab).
+    Thay vào đó lấp dải đen bằng chính nội dung kế bên lật gương lên, rồi
+    làm mờ nhẹ đường nối. Với ảnh bầu trời hoặc đất trơn thì mắt thường
+    không thấy mối nối, mà khung hình vẫn nguyên hình học.
+
+    Khung 11 cố ý có dải đen làm mí mắt nên phải bỏ qua, xem skip_names.
+    """
+    if skip:
+        return im
+
+    a = np.array(im.convert('L')).astype(int)
+    h, w = a.shape
+    rows = a.mean(axis=1)
+    cols = a.mean(axis=0)
+
+    def band_len(vals):
+        n = 0
+        while n < len(vals) and vals[n] < 6:
+            n += 1
+        return n
+
+    top, bottom = band_len(rows), band_len(rows[::-1])
+    left, right = band_len(cols), band_len(cols[::-1])
+
+    # Chỉ coi là dải viền khi nó mỏng (dưới 20 phần trăm chiều cao) và gần
+    # đen tuyệt đối. Model hay đóng khung trên lẫn dưới cùng lúc, nên xét
+    # riêng từng phía chứ không đòi phía đối diện phải sạch.
+    thin = lambda n, total: 8 < n < total * 0.20
+
+    out = im
+    if thin(top, h):
+        src = out.crop((0, top, w, top + top))
+        out = out.copy()
+        out.paste(src.transpose(Image.FLIP_TOP_BOTTOM), (0, 0))
+    if thin(bottom, h):
+        src = out.crop((0, h - 2 * bottom, w, h - bottom))
+        out = out.copy()
+        out.paste(src.transpose(Image.FLIP_TOP_BOTTOM), (0, h - bottom))
+    if thin(left, w):
+        src = out.crop((left, 0, left + left, h))
+        out = out.copy()
+        out.paste(src.transpose(Image.FLIP_LEFT_RIGHT), (0, 0))
+    if thin(right, w):
+        src = out.crop((w - 2 * right, 0, w - right, h))
+        out = out.copy()
+        out.paste(src.transpose(Image.FLIP_LEFT_RIGHT), (w - right, 0))
+
+    if out is not im:
+        # Làm mờ nhẹ đúng đường nối để mắt không bắt được vệt gương.
+        blur = out.filter(ImageFilter.GaussianBlur(6))
+        mask = Image.new('L', out.size, 0)
+        d = ImageDraw.Draw(mask)
+        feather = 10
+        for n, box in (
+            (top, (0, 0, out.size[0], top + feather)),
+            (bottom, (0, out.size[1] - bottom - feather, out.size[0], out.size[1])),
+            (left, (0, 0, left + feather, out.size[1])),
+            (right, (out.size[0] - right - feather, 0, out.size[0], out.size[1])),
+        ):
+            if n:
+                d.rectangle(box, fill=255)
+        out = Image.composite(blur, out, mask)
+
+    return out
+
+
+def process_panel(path):
+    """Khung truyện tranh: cắt về 16:9, xuất WebP chất lượng 82.
+
+    Không dùng chung process_scene vì hàm đó xuất JPEG. Hàm này giữ
+    nguyên cách cắt tâm và cách dò watermark để cả bộ ảnh đồng bộ.
+    """
+    im = Image.open(path).convert('RGB')
+    im = fill_letterbox(im, skip=path.stem in PANEL_KEEP_BANDS)
+    im = trim_watermark(im)
+
+    w, h = im.size
+    target = SCENE_W / SCENE_H
+    if w / h > target:
+        new_w = int(h * target)
+        left = (w - new_w) // 2
+        im = im.crop((left, 0, left + new_w, h))
+    else:
+        new_h = int(w / target)
+        top = (h - new_h) // 2
+        im = im.crop((0, top, w, top + new_h))
+
+    im = im.resize((SCENE_W, SCENE_H), Image.LANCZOS)
+    out = OUT / path.name.replace('.png', '.webp')
+    im.save(out, 'WEBP', quality=PANEL_QUALITY, method=6)
+    return out, im.size
+
+
 def main():
     if not SRC.is_dir():
         print(f'Không thấy thư mục ảnh gốc: {SRC}')
         print('Chạy scripts/gen-assets.py --all trước.')
         sys.exit(1)
 
+    ap = argparse.ArgumentParser(description='Chuẩn hoá ảnh sinh ra từ model')
+    ap.add_argument(
+        '--only', choices=['scenes', 'icons', 'panels'],
+        help='chỉ xử lý một nhóm, mặc định xử lý cả ba',
+    )
+    args = ap.parse_args()
+
     OUT.mkdir(parents=True, exist_ok=True)
 
-    scenes = sorted(SRC.glob('bg-*.png'))
-    icons = sorted(SRC.glob('icon-*.png'))
+    all_scenes = sorted(SRC.glob('bg-*.png'))
+    all_icons = sorted(SRC.glob('icon-*.png'))
+    all_panels = sorted(SRC.glob('screen-*.png'))
 
-    print(f'Xử lý {len(scenes)} ảnh nền và {len(icons)} icon')
+    scenes = [] if args.only not in (None, 'scenes') else all_scenes
+    icons = [] if args.only not in (None, 'icons') else all_icons
+    panels = [] if args.only not in (None, 'panels') else all_panels
+
+    print(f'Xử lý {len(scenes)} ảnh nền, {len(icons)} icon và {len(panels)} khung truyện')
     print('')
 
     total_before = 0
@@ -269,33 +387,42 @@ def main():
         total_after += out.stat().st_size
         print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
 
+    for p in panels:
+        total_before += p.stat().st_size
+        out, size = process_panel(p)
+        total_after += out.stat().st_size
+        print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
+
     # Ghi manifest để phía web biết chính xác từng file kèm kích thước,
     # khỏi phải mò đường dẫn hay đoán ảnh nào đã xử lý.
+    # Quét thẳng thư mục ra thay vì dựa vào danh sách vừa xử lý: khi chạy
+    # --only panels thì danh sách cảnh và icon rỗng, ghi theo danh sách sẽ
+    # xoá mất phần đã có trong manifest.
     manifest = {
         'generated': __import__('datetime').datetime.now().isoformat(timespec='seconds'),
         'scenes': [],
         'icons': [],
+        'panels': [],
     }
-    for p in scenes:
-        out = OUT / p.name.replace('.png', '.jpg')
-        if out.exists():
-            manifest['scenes'].append({
-                'id': out.stem,
-                'path': f'assets/art/{out.name}',
-                'width': SCENE_W,
-                'height': SCENE_H,
-                'bytes': out.stat().st_size,
-            })
-    for p in icons:
-        out = OUT / p.name.replace('.png', '.webp')
-        if out.exists():
-            manifest['icons'].append({
-                'id': out.stem,
-                'path': f'assets/art/{out.name}',
-                'width': ICON_SIZE,
-                'height': ICON_SIZE,
-                'bytes': out.stat().st_size,
-            })
+
+    def entry(path, w, h):
+        return {
+            'id': path.stem,
+            'path': f'assets/art/{path.name}',
+            'width': w,
+            'height': h,
+            'bytes': path.stat().st_size,
+        }
+
+    # Cảnh và icon từng được xuất JPEG ở bản cũ, nay là WebP. Lấy file nào
+    # thực sự có trên đĩa, ưu tiên WebP, để manifest không trỏ vào file ma.
+    for p in sorted(OUT.glob('bg-*')):
+        if p.suffix.lower() in ('.webp', '.jpg'):
+            manifest['scenes'].append(entry(p, SCENE_W, SCENE_H))
+    for p in sorted(OUT.glob('icon-*.webp')):
+        manifest['icons'].append(entry(p, ICON_SIZE, ICON_SIZE))
+    for p in sorted(OUT.glob('screen-*.webp')):
+        manifest['panels'].append(entry(p, SCENE_W, SCENE_H))
 
     manifest_path = OUT / 'asset-manifest.json'
     manifest_path.write_text(

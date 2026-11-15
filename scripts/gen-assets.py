@@ -95,6 +95,49 @@ STYLE_FACE = (
 
 STYLE = STYLE_CLEAN
 
+# ------------------------------------------------- màn mở đầu dạng truyện tranh
+# Mười hai khung của đoạn phim mở đầu kể bằng tranh, không lời thoại.
+# Khối này KHÁC hẳn STYLE_LOOK ở trên: tranh truyện in màu, nét mực đen
+# sắc, đổ bóng sâu, không phải tranh concept mờ ảo. Vì vậy không dùng
+# STYLE_CLEAN cho các khung này: STYLE_CLEAN có 'no people, no faces,
+# no hands' và model sẽ vẽ ra phong cảnh trống, mất hẳn phần kể chuyện.
+# Chỉ hai khung 01 và 12 là cảnh trống nên mới được phép khoá con người.
+COMIC_BASE = (
+    'full-color graphic novel illustration, sharp clean ink linework, '
+    'deep shadows, cinematic dramatic lighting, science fiction comic book '
+    'style, rich saturated colors, detailed rendering, no text, no letters, '
+    'no watermark, no logo, no border, no frame'
+)
+
+COMIC_PALETTE = (
+    'palette of rust red and burnt orange Mars dust, charcoal grey storm '
+    'shade, cold white light from helmet lamps, hot red engine glow, '
+    'widescreen 16:9 comic panel composition'
+)
+
+# Cảnh trống: chỉ dùng cho khung 01 và 12.
+COMIC_EMPTY = COMIC_BASE + ', ' + COMIC_PALETTE + ', no people, no figures'
+
+# Cảnh có phi hành gia, mặt khuất sau kính mũ.
+COMIC_CREW = (
+    COMIC_BASE + ', ' + COMIC_PALETTE + ', '
+    'astronauts in bulky white EVA pressure suits with dusty mirrored visors'
+)
+
+# Cảnh có một khuôn mặt nhìn rõ sau kính mũ.
+COMIC_FACE = (
+    COMIC_BASE + ', ' + COMIC_PALETTE + ', '
+    'one astronaut in a white EVA suit, face clearly visible behind a clear '
+    'scratched helmet visor'
+)
+
+# Góc nhìn thứ nhất: có bàn tay trong khung nên không được khoá tay.
+COMIC_POV = (
+    COMIC_BASE + ', ' + COMIC_PALETTE + ', '
+    'first person point of view, one gloved hand and forearm of a white EVA '
+    'suit reaching into the lower edge of the frame'
+)
+
 # Tỉ lệ khung: dùng 16:9 cho ảnh nền, 1:1 cho icon.
 # Model có thể bỏ qua tham số size, nên vẫn phải crop ở hậu kỳ.
 
@@ -406,6 +449,163 @@ ASSETS = {
         ),
         'note': 'hồi tưởng: chia tay ở cửa',
         'kind': 'scene',
+    },
+
+    # ---------- mười hai khung truyện tranh của màn mở đầu ----------
+    # Kể tuần tự không lời thoại, bám sát hai bản phác thảo tay của tác
+    # giả. Bố cục từng khung ghi trong prompt là bố cục phác thảo, không
+    # phải bố cục CSS: phần chia ô, thu nhỏ khung trước, mở mí mắt đều do
+    # CSS làm khi ghép, nên ảnh phải là khung sạch không viền không ô nhỏ.
+
+    'screen-01': {
+        'prompt': (
+            'extreme wide establishing shot of an empty Martian plain, '
+            'a colossal dust storm vortex spiralling up from the ground and '
+            'swallowing the whole horizon, towering wall of ochre dust, '
+            'flat red desert floor with scattered rocks in the foreground, '
+            'no figures anywhere, desolate and silent'
+        ),
+        'note': 'khung 1: bão cát nuốt chân trời, đồng bằng trống',
+        'kind': 'comic',
+        'style': COMIC_EMPTY,
+    },
+    'screen-02': {
+        'prompt': (
+            'medium shot of five or six astronauts in bulky white EVA suits '
+            'sprinting hunched low through a thick red dust storm, bodies '
+            'leaning into a hard gust, arms pumping, faces hidden behind '
+            'dusty visors, dust streaking horizontally across frame, '
+            'storm swallowing the background'
+        ),
+        'note': 'khung 2: đội chạy cúi người trong bão',
+        'kind': 'comic',
+        'style': COMIC_CREW,
+    },
+    'screen-03': {
+        'prompt': (
+            'first person view looking forward through blowing dust at a tall '
+            'Mars ascent vehicle standing on its launch legs, cargo hatch open '
+            'and ramp lowered, three white suited crew members ahead scrambling '
+            'up the ladder toward the hatch, the viewer gloved arm and forearm '
+            'reaching into the bottom edge of frame, dust halos around the '
+            'floodlights'
+        ),
+        'note': 'khung 3: POV nhìn thấy tàu MAV, ba người leo lên',
+        'kind': 'comic',
+        'style': COMIC_POV,
+    },
+    'screen-04': {
+        'prompt': (
+            'tight close up of one astronaut face inside a helmet, seen '
+            'through the curved visor glass, eyes wide open in shock and '
+            'sudden realization, mouth half open, comic book shock emphasis '
+            'lines radiating around the helmet, faint blurred reflection of a '
+            'huge shape rushing toward them inside the glass, red dust on the '
+            'visor edges'
+        ),
+        'note': 'khung 4: cận mặt giật mình sau kính mũ',
+        'kind': 'comic',
+        'style': COMIC_FACE,
+    },
+    'screen-05': {
+        'prompt': (
+            'low close up at ground level, a heavy astronaut boot mid stride '
+            'catching hard on a rock jutting out of the red sand, boot toe '
+            'jammed against the stone, clods of dirt and gravel flying up, '
+            'sharp comic speed lines around the impact, dust puff at the heel'
+        ),
+        'note': 'khung 5: ủng vấp tảng đá, đất văng',
+        'kind': 'comic',
+        'style': COMIC_CREW,
+    },
+    'screen-06': {
+        'prompt': (
+            'wide shot of a single astronaut in a white EVA suit face down on '
+            'the rocky ground, both gloved hands braced against the stones, '
+            'body flat and sprawled, sand storm howling around them, dust '
+            'curling over the back of the suit, hard wind blowing grit past '
+            'the camera'
+        ),
+        'note': 'khung 6: ngã sấp giữa bão',
+        'kind': 'comic',
+        'style': COMIC_CREW,
+    },
+    'screen-07': {
+        'prompt': (
+            'wide shot of an astronaut lying motionless face down on the red '
+            'ground while wind-driven sand pours over the body, the white suit '
+            'half buried and fading into the dust drift, silhouette going '
+            'dim and almost lost under the sand, chapter closing panel with '
+            'heavy dark vignette closing in from all four edges, sand drifts '
+            'piling at the frame edges'
+        ),
+        'note': 'khung 7: cát vùi dần, khung kết chương viền kép',
+        'kind': 'comic',
+        'style': COMIC_CREW,
+    },
+    'screen-08': {
+        'prompt': (
+            'straight top down aerial view looking vertically down the eye of '
+            'a dust storm, a launch pad below with an upright Mars rocket, a '
+            'transparent pressurised cabin near the top of the rocket with six '
+            'white suited crew floating weightless inside, seen through the '
+            'clear glass canopy, the rocket nose and body visible from above, '
+            'storm wall spiralling around the pad'
+        ),
+        'note': 'khung 8: từ trên xuống, 6 người lơ lửng trong tàu',
+        'kind': 'comic',
+        'style': COMIC_CREW,
+    },
+    'screen-09': {
+        'prompt': (
+            'low angle looking up, a Mars ascent vehicle firing its engines, '
+            'blazing hot red exhaust tearing through the dust storm cloud as '
+            'it lifts off the surface, smoke and dust boiling away on both '
+            'sides of the frame, bright engine glare, vehicle silhouette '
+            'against the storm ceiling'
+        ),
+        'note': 'khung 9: tàu khai hỏa cất cánh xé mây bão',
+        'kind': 'comic',
+        'style': COMIC_CREW,
+    },
+    'screen-10': {
+        'prompt': (
+            'wide comic panel of deep black star filled space, planet Mars '
+            'glowing red orange in the centre of frame with visible cratered '
+            'surface and a thin glowing atmosphere rim, a tiny spacecraft high '
+            'in the upper left trailing a bright engine plume, arcing away '
+            'from orbit into the distance, heavy black ink outlines on the '
+            'planet limb and the ship, halftone dot shading in the shadow '
+            'side of the planet, drawn on paper like a printed comic page'
+        ),
+        'note': 'khung 10: tàu nhỏ bay khỏi Sao Hỏa',
+        'kind': 'comic',
+        'style': COMIC_EMPTY,
+    },
+    'screen-11': {
+        'prompt': (
+            'first person view from the ground through barely opened eyes, '
+            'thick solid black eyelid shapes filling the top quarter and the '
+            'bottom quarter of the frame, a narrow horizontal slit between '
+            'them showing an out of focus pale Mars sky and red ground, soft '
+            'blur only inside the slit, a white suited arm lying limp in the '
+            'sand visible in the lower slit edge, comic panel framing'
+        ),
+        'note': 'khung 11: mở mí mắt, nhìn ra bầu trời Sao Hỏa',
+        'kind': 'comic',
+        'style': COMIC_POV,
+    },
+    'screen-12': {
+        'prompt': (
+            'quiet wide shot of the Martian surface after the storm, clear '
+            'orange sky, an empty red plain, a lonely dome shaped habitat '
+            'module standing on the left side of frame with a round airlock '
+            'door and small antenna, a few rock outcrops and a piece of '
+            'equipment on the right side, long shadows, no figures anywhere'
+        ),
+        'note': 'khung 12: trạm Hab mái vòm sau bão, cảnh trống',
+        'kind': 'comic',
+        'style': COMIC_EMPTY,
     },
 }
 
