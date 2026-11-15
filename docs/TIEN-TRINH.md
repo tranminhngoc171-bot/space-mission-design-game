@@ -1,0 +1,181 @@
+# TIẾN TRÌNH DỰ ÁN — lưu lúc tạm dừng
+
+Cập nhật lần cuối: đêm 15/11/2026, trước khi tắt máy đi ngủ.
+Đọc file này trước khi làm tiếp bất cứ việc gì.
+
+---
+
+## 1. Trạng thái tổng thể
+
+Game đã chơi được từ đầu tới cuối trên bản live. Không còn lỗi chặn luồng nào đã biết.
+
+**Bản live:** https://bersious.io.vn/nasa (không có dấu chéo cuối)
+**Repo game:** `C:\Users\nguye\workspace\nasa-space-apps-2026\team-repo`, nhánh `feat/ui-scaffold`
+**Repo deploy:** `C:\Users\nguye\bersious-web`
+
+---
+
+## 2. Hai cái bẫy phải nhớ, nếu quên là sập cả site
+
+### Bẫy 1: `middleware.ts` làm cả website trả 500
+
+File `~/bersious-web/middleware.ts` là script đếm lượt truy cập, nó gây
+`MIDDLEWARE_INVOCATION_FAILED` trên mọi đường dẫn, không riêng trang game.
+Tháng 10 đã đổi tên thành `middleware.ts.disabled`.
+
+**Mỗi lần rebase hoặc reset repo bersious-web phải kiểm lại file này.**
+Nếu thấy `middleware.ts` xuất hiện thì đổi tên ngay:
+
+```bash
+cd ~/bersious-web && ls middleware*
+# nếu có middleware.ts thì:
+git mv middleware.ts middleware.ts.disabled && git commit -m "fix: tắt middleware, nó làm site 500" && git push origin main
+```
+
+### Bẫy 2: workflow chỉ chép `src/`, không chép `phase2/`
+
+Phase 2 nằm NGOÀI `src/` (thiết kế cũ) nhưng game nạp nó qua `../phase2`.
+Workflow `sync-game.yml` đã được sửa để có bước rsync riêng cho `phase2/`.
+Nếu ai sửa lại workflow, phải giữ bước đó, không thì cả Giai đoạn 2 trả 404.
+
+---
+
+## 3. Quy trình deploy (làm đúng thứ tự này)
+
+```bash
+cd "C:/Users/nguye/workspace/nasa-space-apps-2026/team-repo"
+git add -A && git commit -m "..."
+git push origin feat/ui-scaffold
+gh pr create --base main --head feat/ui-scaffold --title "..." --body "..."
+gh pr merge --merge
+
+cd ~/bersious-web
+git fetch -q origin && git reset --hard origin/main -q   # quan trọng: reset để lấy bản mới
+gh workflow run sync-game.yml
+sleep 90
+curl -s -o /dev/null -w "%{http_code}\n" "https://bersious.io.vn/nasa"
+```
+
+Lưu ý: `git pull --rebase` hay bị kẹt vì workflow bot commit liên tục.
+Dùng `git fetch && git reset --hard origin/main` cho chắc.
+
+---
+
+## 4. Những gì đã xong
+
+### Hạ tầng và luồng
+- Màn chờ tải nhúng thẳng HTML đầu `<body>`, hiện trong 353ms, ba lớp tự gỡ độc lập
+- Cổng chặn chuyển cảnh (`gate()` trong `preloader.js`), không che video mở đầu
+- Menu mới: ảnh nền `menu-mars-hero.webp` (tàu + phi hành gia nằm trong tranh), tiêu đề căn giữa chuẩn 720/1440, ba nút kiểu HUD, tagline The Martian
+- Bỏ hẳn sprite tàu SVG và ảnh nhân vật rời
+
+### Giai đoạn 1
+- Căn cứ point-and-click, 6 trạm, HUD nổi
+- Nhật ký sứ mệnh 2 tab, checklist đọc trạng thái thật từ game
+- Chuỗi quest xác tàu: ngày 6 nhớ ra, ngày 7-9 đào, sửa 3 món, rồi mới phát tín hiệu
+- Nút Thiết kế tàu khoá cho tới khi phát tín hiệu xong
+- 8 ảnh ending thua, màn ending có báo cáo NASA và ba nút
+
+### Giai đoạn 2
+- Đủ 4 bước: bắt sóng, lắp ráp, kiểm duyệt, bay và hạ cánh
+- 6 đường chỉ dẫn trên thân tàu, modal linh kiện, modal quỹ đạo 3 phương án
+- 4 đồng hồ đo, nút PHÓNG khoá theo 80% xanh
+- Nút Hạ cánh ngay mở đường thua EDL
+- `mountPhase2` tự nạp `phase2.css` (trước đây mở từ bảng dev là vỡ giao diện)
+
+### Kết thúc
+- 13 ảnh comic chuyển tiếp (đã bóc sạch logo NASA)
+- True Ending 9 khung + bảng tổng kết xếp hạng S/A/B, đối chiếu Curiosity/Perseverance/MAVEN
+- 8 ảnh True Ending đủ bộ
+
+### Bảo hiểm
+- `guide-escape.js`: gỡ mọi lớp phủ hướng dẫn còn sót, có nút trong bảng dev
+- Thẻ hướng dẫn tự đóng sau 40 giây, Esc đóng được
+- Bảng dev 40 mục, 6 nhóm
+
+---
+
+## 5. Việc còn lại khi chạy tiếp
+
+### Ưu tiên 1: chạy lại 5 sub kiểm tra (đã bị dừng giữa chừng)
+
+Năm sub đã chạy 48 phút và sửa được vài lỗi, rồi bị dừng để tắt máy.
+Cần chia lại để kiểm tra nốt:
+
+1. Màn chờ, menu, nút Bắt đầu phản hồi dưới 100ms
+2. Comic 12 khung, story, lớp hướng dẫn
+3. Căn cứ: 6 trạm, túi đồ, nông trại, đường thua
+4. Phase 2: 4 bước, True Ending, đường thua
+5. Rà soát bản live
+
+Prompt mẫu cho sub 5 (rà soát live) ở mục 7 dưới.
+
+### Ưu tiên 2: kiểm bằng mắt toàn bộ luồng
+
+Chưa có lần nào chơi thông từ đầu tới cuối bằng tay trên bản live để
+xác nhận không có màn nào trắng hay kẹt. Cần một lượt chơi thật.
+
+### Ưu tiên 3: nộp bài
+
+Theo thể lệ cần: mã công khai GitHub (đã có), tóm tắt 50-200 từ,
+live demo (đã có), **video 30-60 giây** (chưa quay).
+
+---
+
+## 6. Lỗi đã biết nhưng chưa sửa
+
+| Lỗi | Mức độ | Ghi chú |
+|---|---|---|
+| Khung 13 comic còn vài miếng vá trống trên ngực đám đông | Rất nhẹ | Không phải logo, không có ký tự nào |
+| Khung 11 comic: giám đốc đập hai tay thay vì một | Rất nhẹ | Hết hạn ngạch sinh lại |
+| Footer menu hơi nhỏ, tương phản thấp | Nhẹ | Vision gợi ý tăng lên 11-12px |
+| Phase 2 có scrollbar trình duyệt lộ ở mép phải | Nhẹ | Cần custom scrollbar |
+| Nút "TIẾP: LẬP TÀU" trong Phase 2 là chữ xám chứ không phải nút | Nhẹ | Ngược phân cấp với nút BƯỚC TRƯỚC |
+
+---
+
+## 7. Prompt mẫu cho sub rà soát live
+
+```
+Game web thuần HTML/CSS/JS. Bản live: https://bersious.io.vn/nasa
+Repo: C:\Users\nguye\workspace\nasa-space-apps-2026\team-repo
+
+Đây là sub kiểm tra cuối trước khi nộp bài thi. Mục tiêu là tìm mọi thứ
+có thể làm giám khảo kết luận game bị hỏng.
+
+Kiểm trên BẢN LIVE (không phải localhost) để chắc file đã deploy:
+1. Tải trang lần đầu, không cache. Có khung trắng nào lọt ra không,
+   màn chờ có hiện ngay không, console có 404 file nào không.
+2. Bấm qua toàn bộ luồng: menu Bắt đầu, video, comic, story, căn cứ,
+   sáu trạm, nhật ký, sổ tay, thiết kế tàu, kiểm duyệt, bay, kết thúc.
+   Ghi rõ chỗ nào kẹt, chỗ nào trống.
+3. Dùng curl kiểm từng file js và css mà index.html và các module import.
+4. Kiểm 13 ảnh bg-im, 8 ảnh true-ending, 8 ảnh ending_ đều phải 200.
+5. Responsive 1440x900, 1024x768, 390x844, không tràn ngang.
+6. Đổi VI sang EN, đi qua vài màn, tìm chuỗi tiếng Việt còn sót.
+7. Không có logo NASA trong ảnh, chỉ được HORIZON-IV hoặc MISSION CONTROL.
+
+Nếu sửa lỗi thì deploy lại theo đúng thứ tự: push nhánh feat/ui-scaffold,
+tạo PR, merge, rồi cd ~/bersious-web && git fetch && git reset --hard
+origin/main && gh workflow run sync-game.yml.
+
+TUYỆT ĐỐI không để file middleware.ts xuất hiện trong ~/bersious-web,
+nó làm cả site trả 500.
+```
+
+---
+
+## 8. Đường dẫn quan trọng
+
+| Thứ gì | Ở đâu |
+|---|---|
+| Repo game | `~/workspace/nasa-space-apps-2026/team-repo` |
+| Repo deploy | `~/bersious-web` |
+| Workflow deploy | `~/bersious-web/.github/workflows/sync-game.yml` |
+| Script sinh ảnh | `team-repo/scripts/gen-assets.py` |
+| Script xử lý ảnh | `team-repo/scripts/process-assets.py` |
+| Che watermark | `team-repo/scripts/wm-clean.py`, `wm-clean-im.py`, `wm-clean-menu.py` |
+| Python có cv2 | `C:/Python314/python.exe` (python mặc định KHÔNG có cv2) |
+| Server test | `cd team-repo/src && python -m http.server 8321` |
+| Server Phase 2 | `cd team-repo && python -m http.server 8331` |
+| Kịch bản truyện | `~/Desktop/NASA-Game-Kich-Ban.txt` |
