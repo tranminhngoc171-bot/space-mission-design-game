@@ -1255,3 +1255,25 @@ html.motion-off .exv-wave-dot {
     border-color: var(--line-strong);
   }
 }
+
+
+/* Nút phụ "Hạ cánh ngay": cùng kích thước nút chính nhưng viền mảnh,
+   để người chơi thấy đây là lựa chọn mạo hiểm chứ không phải nút
+   được khuyến nghị. */
+.exv-btn-ghost {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--line-strong) 65%, transparent);
+  color: var(--tx-dim);
+}
+
+.exv-btn-ghost:hover,
+.exv-btn-ghost:focus-visible {
+  background: color-mix(in srgb, var(--fail) 14%, transparent);
+  border-color: color-mix(in srgb, var(--fail) 55%, transparent);
+  color: var(--tx-bright);
+}
+
+.exv-btn-ghost:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}

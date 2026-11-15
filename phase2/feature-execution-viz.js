@@ -70,6 +70,8 @@ const T = {
     cmdButton: 'Kích hoạt đèn hiệu bãi đáp',
     cmdButtonEn: 'Activate landing beacon',
     cmdAck: 'Đèn hiệu bãi đáp đã bật. Tàu bắt đầu vào khí quyển.',
+    landNoBeaconWarn: 'Hạ cánh ngay là mạo hiểm: chưa có đèn hiệu, tàu sẽ đáp mù và rất dễ hỏng.',
+    landNow: 'Hạ cánh ngay',
 
     edlTitle: 'Bảy phút kinh hoàng',
     edlTitleEn: 'Seven minutes of terror',
@@ -156,6 +158,8 @@ const T = {
     cmdButton: 'Activate landing beacon',
     cmdButtonEn: 'Kích hoạt đèn hiệu bãi đáp',
     cmdAck: 'Beacon is on. The craft is entering the atmosphere.',
+    landNoBeaconWarn: 'Landing now is a gamble: with no beacon the ship lands blind and is very likely to crash.',
+    landNow: 'Land now',
     edlTitle: 'Seven minutes of terror',
     edlTitleEn: 'Bảy phút kinh hoàng',
     edlSub: 'The craft hits the Martian atmosphere. Everything must run on its own, nobody on Earth can help in time.',
@@ -383,6 +387,10 @@ export function mountExecution({ container, engine, onDone } = {}) {
             <span>${esc(t('cmdButton'))}</span>
             <em>${esc(e('cmdButton'))}</em>
           </button>
+          <button type="button" class="exv-btn exv-btn-ghost" data-act="land-now">
+            <span>${esc(t('landNow'))}</span>
+            <em>${esc(e('landNow'))}</em>
+          </button>
           <p class="exv-cmd-ack" data-out="ack" hidden></p>
         </div>
       </div>
@@ -520,6 +528,7 @@ export function mountExecution({ container, engine, onDone } = {}) {
     verdict: root.querySelector('[data-out="verdict"]'),
   };
   const btnBeacon = root.querySelector('[data-act="beacon"]');
+  const btnLandNow = root.querySelector('[data-act="land-now"]');
   const btnReplay = root.querySelector('[data-act="replay"]');
   const btnFinish = root.querySelector('[data-act="finish"]');
   const edlCanvas = root.querySelector('.exv-edl-canvas');
@@ -1432,7 +1441,35 @@ export function mountExecution({ container, engine, onDone } = {}) {
     if (typeof onDone === 'function') onDone({ done: true });
   }
 
+  /* Hạ cánh khi chưa cắm đèn hiệu: tàu đáp mù nên hỏng. Đây là đường
+     thua edl_crash mà người chơi tự chọn, không phải chỉ bấm được từ
+     bảng dev. Nút nằm cạnh nút đèn hiệu để thấy rõ hai lựa chọn: cắm
+     đèn rồi hạ cánh, hay liều hạ cánh luôn. */
+  function onLandNow() {
+    if (beaconDone || edlStarted) return;
+    btnLandNow.disabled = true;
+    btnBeacon.disabled = true;
+    out.ack.hidden = false;
+    out.ack.textContent = t('landNoBeaconWarn');
+    const ok = (() => {
+      if (!engine || typeof engine.failMission !== 'function') return false;
+      try {
+        engine.failMission('edl_crash');
+        return true;
+      } catch {
+        return false;
+      }
+    })();
+    if (!ok) {
+      /* Engine chưa có hàm thua thì vẫn cho vào EDL bình thường, không
+         để người chơi kẹt ở màn không có gì xảy ra. */
+      const id = setTimeout(() => { if (!destroyed) enterEdl(); }, motionOn ? 900 : 120);
+      stageTimers.push(() => clearTimeout(id));
+    }
+  }
+
   btnBeacon.addEventListener('click', onBeacon);
+  if (btnLandNow) btnLandNow.addEventListener('click', onLandNow);
   btnReplay.addEventListener('click', onReplay);
   btnFinish.addEventListener('click', onFinish);
 
@@ -1496,6 +1533,7 @@ export function mountExecution({ container, engine, onDone } = {}) {
       if (viz && typeof viz.destroy === 'function') viz.destroy();
       if (vizFallback && typeof vizFallback.destroy === 'function') vizFallback.destroy();
       btnBeacon.removeEventListener('click', onBeacon);
+    if (btnLandNow) btnLandNow.removeEventListener('click', onLandNow);
       btnReplay.removeEventListener('click', onReplay);
       btnFinish.removeEventListener('click', onFinish);
       root.remove();
