@@ -99,7 +99,26 @@ STYLE_FACE = (
 
 STYLE = STYLE_CLEAN
 
-# ------------------------------------------- bộ art màn căn cứ thiết kế lại
+# ---------- tám cảnh kết thúc thua ----------
+# Yêu cầu riêng: truyện tranh khoa học viễn tưởng toàn màu, ánh sáng điện
+# ảnh, đổ bóng sâu, nét vẽ sắc. Khác COMIC_BASE ở chỗ khoá bảng màu Sao Hỏa
+# (đỏ cam đất, đen xám bụi, trắng lạnh, hổ phách #e8a33d, xanh lơ #4fb8c9)
+# để tám tranh đứng cạnh nhau trong màn kết thúc vẫn là một bộ.
+# Nhấn mạnh "no text" nhiều lần: model hay vẽ chữ lên màn hình thiết bị, mà
+# luật của game là tranh tuyệt đối không có chữ.
+ENDING_STYLE = (
+    'full-color science fiction comic book illustration, sharp clean ink '
+    'linework, cinematic dramatic lighting with a strong single key light, '
+    'deep black shadows, rich saturated colour, detailed rendering, '
+    'widescreen 16:9 composition, '
+    'palette of rust orange Mars dust, charcoal grey grit, cold white light, '
+    'amber highlight #E8A33D and pale cyan #4FB8C9 accents, '
+    'absolutely no text, no letters, no numbers, no labels, no signage, '
+    'no writing on any screen or wall, no logo, no watermark, no border, '
+    'no frame, no caption box'
+)
+
+
 # Bộ này theo Art Direction mới, không theo NASA concept art book cũ: tranh
 # phẳng, nét sạch, đọc được ở cỡ nhỏ, bảng màu khoá cứng 5 màu. Dùng chung
 # cho sprite nhân vật, icon vật phẩm và tranh popup để ba nhóm không lệch
@@ -138,17 +157,37 @@ STYLE_ICON_SPRITE = (
 # STYLE_CLEAN, nếu không model trả về khung cảnh trống. Nền vẫn phải phẳng
 # một màu để hậu kỳ tách alpha, và phải là ảnh toàn thân đứng trong khung
 # dọc, cùng tỉ lệ cho cả ba tư thế.
+#
+# MÀU NỀN: xanh lơ nhạt đặc #B8D8D0, không dùng xám #7A7A7A nữa. Hai lý do:
+# (1) bộ đồ có mảng trắng xám NASA #E2E8F0 rất gần xám nền, hiệu màu chỉ
+# khoảng 40 đơn vị nên mặt nạ alpha bị ăn mòn vào vai và ống chân; (2) nền
+# xám trung tính trùng với màu giày xám nhạt và với ánh sáng phụ, nên
+# silhouette khó dò. Xanh lơ nhạt đứng xa cả da nâu, cam gỉ và trắng xám
+# về mặt hiệu màu, tách sạch mà không cần chỉnh ngưỡng.
+#
+# ĐÓNG KHUNG: phải nói rõ tỉ lệ khung dọc và tỉ lệ người chiếm khung. Bản
+# trước chỉ nói "head to boots inside the frame" mà không nói người chiếm
+# bao nhiêu phần khung, model hiểu là phải lấp đầy khung nên phóng người
+# lên và tràn chân ra ngoài mép dưới.
+CHAR_BG_HEX = '#B8D8D0'
+
 STYLE_CHAR = (
     STYLE_HARD + ', '
     'full body character sprite of one single astronaut, '
-    'head to boots completely inside the frame, standing vertically, '
-    'both boots and their soles fully visible with clear empty grey space '
-    'below the feet, generous empty margin above the head, '
+    'vertical portrait frame, the figure standing upright and centered, '
+    'full body shot, entire figure visible from the top of the head to the '
+    'soles of the boots, generous empty margin above the head and below the '
+    'boots, the character occupies only about 80 percent of the frame height, '
+    'feet fully visible wearing work boots, '
+    'both boots and their soles fully visible with clear empty background '
+    'space below the feet, '
+    'not cropped at the legs, not cut off at the ankles, no missing feet, '
     'nothing floating in the empty space beside the body, '
     'no stray marks, no props floating in the air, '
-    'background is a single flat uniform mid grey #7A7A7A, '
+    f'background is a single flat uniform light cyan-green {CHAR_BG_HEX}, '
+    'uniform flat background, perfectly smooth and even, '
     'no gradient, no vignette, no floor plane, no horizon, no scenery, '
-    'no props behind the figure, no cast shadow on the background, '
+    'no props behind the figure, no shadows cast on the background, '
     'clean crisp silhouette, no text, no watermark, no border, no frame, '
     'no extra limbs, no second person'
 )
@@ -230,6 +269,102 @@ COMIC_POV = (
 
 # Tỉ lệ khung: dùng 16:9 cho ảnh nền, 1:1 cho icon.
 # Model có thể bỏ qua tham số size, nên vẫn phải crop ở hậu kỳ.
+
+# ---------- năm ảnh nền cho Giai đoạn 2 ----------
+# Cùng giọng với ENDING_STYLE (truyện tranh khoa học viễn tưởng toàn màu,
+# ánh sáng điện ảnh, đổ bóng sâu, nét vẽ sắc) để Phase 2 đứng cạnh Phase 1
+# không bị lệch chất. Khác một điểm: các ảnh này là LỚP NỀN nằm sau nội
+# dung SVG, nên phải tối và ít chi tiết ở vùng giữa khung, nếu không chữ
+# và thanh đo phía trên sẽ chìm. Vì vậy thêm câu "uncluttered midtones in
+# the centre of frame" và cấm mọi chữ.
+# Cũng cấm tuyệt đối mọi chữ trên màn hình thiết bị: model rất hay vẽ chữ
+# giả lên màn hình điều khiển, mà luật của game là tranh không có chữ.
+P2_SCENE_STYLE = (
+    'full-color science fiction comic book illustration, sharp clean ink '
+    'linework, cinematic dramatic lighting with a strong single key light, '
+    'deep black shadows, rich saturated colour, detailed rendering, '
+    'widescreen 16:9 composition, uncluttered midtones in the centre of '
+    'frame so interface text can sit on top, '
+    'palette of rust orange Mars dust, charcoal grey grit, cold white light, '
+    'amber highlight #E8A33D and pale cyan #4FB8C9 accents, '
+    'absolutely no text, no letters, no numbers, no labels, no signage, '
+    'no writing on any screen or wall, no logo, no watermark, no border, '
+    'no frame, no caption box'
+)
+
+# Phòng điều khiển có người trực: chỉ thấy bóng người ngồi quay lưng hoặc
+# nghiêng, không cần mặt rõ. Nếu khoá "no people" thì khung hình thành
+# căn phòng trống, mất hẳn không khí căng thẳng đang chờ.
+P2_SCENE_STYLE_CREW = P2_SCENE_STYLE.replace(
+    'no logo, no watermark, no border, no frame, no caption box',
+    'flight controllers seen from behind as dark silhouettes, faces not '
+    'visible, no logo, no watermark, no border, no frame, no caption box'
+)
+
+# ------------------------------------------- chuyển tiếp Giai đoạn 1 sang 2
+# Bảy khung bg-im-* của bộ mười ba khung chuyển tiếp. Hai sub sinh hai nửa
+# bộ ảnh chạy song song, nên khối mô tả nhân vật và khối phong cách phải
+# chép nguyên văn giống nhau ở cả hai nơi; lệch một chữ là hai nửa bộ ảnh
+# hiện ra hai phòng điều khiển khác nhau.
+#
+# IM_CHARS là khối mô tả nhân vật DÙNG CHUNG, không được sửa, không được
+# rút gọn: model không nhận ảnh tham chiếu nên chỉ có một khối chữ dài và
+# cố định mới giữ viên kiểm soát và giám đốc nhiệm vụ là cùng một người
+# qua nhiều khung.
+IM_CHARS = (
+    'consistent character design: NASA flight controller is a young man in '
+    'his late twenties with short dark hair, rectangular black-framed '
+    'glasses, white dress shirt with a dark navy tie, NASA badge clipped to '
+    'his chest pocket; the NASA mission director is a man in his late '
+    'fifties with salt and pepper grey hair, wearing a light grey flight '
+    'director vest over a white shirt with rolled up sleeves, stern '
+    'determined jaw; the control room has two huge projection screens '
+    'mounted on a dark wall with the NASA logo centered between them, '
+    'tiered rows of computer desks below, blue cyan glow from monitors, '
+    'dark navy and amber lighting'
+)
+
+# Phong cách chung của cả mười ba khung, đúng như bản mô tả của tác giả:
+# truyện tranh toàn màu, nét mực sắc, đổ bóng sâu, điện ảnh.
+# Khác COMIC_BASE ở chỗ bảng màu là phòng điều khiển (xanh lơ cyan, hổ
+# phách amber, navy tối, đỏ cam cảnh báo) chứ không phải bụi Sao Hỏa.
+# Câu "leave a calm empty area in an upper or lower corner" là chỗ để hộp
+# thoại HTML đè lên: tranh không được kín chi tiết ở mọi góc.
+IM_STYLE = (
+    'full-color graphic novel illustration, sharp clean ink linework, '
+    'deep shadows, cinematic dramatic lighting, science fiction comic book '
+    'style, rich saturated colors, 16:9 widescreen composition, '
+    'palette of cyan glow from screens, amber #e8a33d from warm lamps, '
+    'dark navy room shadow, red orange emergency light, '
+    'leave a calm uncluttered area in one upper or lower corner so a dialogue '
+    'box can sit on top of the art later, '
+    'do not draw any caption box, do not draw any blank empty rectangle in '
+    'a corner, no speech bubble, '
+    'absolutely no text, no letters, no numbers, no labels, no signage, '
+    'no writing on any screen, wall or paper, no watermark, no logo, '
+    'no caption box, no speech bubble'
+)
+
+# Cảnh trong phòng điều khiển dùng chung khối IM_STYLE. Khối nhân vật
+# IM_CHARS KHÔNG gắn vào style mà chép thẳng vào từng prompt: spec của bộ
+# ảnh yêu cầu khối đó nằm trong prompt, và nhét thêm lần nữa qua style sẽ
+# gửi cùng một đoạn 190 từ hai lần trong một câu lệnh.
+IM_STYLE_ROOM = IM_STYLE
+
+# Khung ngoài không gian không có phòng điều khiển nên không mang khối
+# nhân vật; chỉ giữ phần phong cách và bảng màu cyan của tín hiệu.
+IM_STYLE_SPACE = IM_STYLE
+
+# Phi hành gia mắc kẹt của khung 9: mô tả cố định, dùng nguyên văn trong
+# prompt. Bộ đồ Horizon IV: vỏ cứng trắng NASA, lớp vải cam gỉ ở vai hông
+# đầu gối, phủ bụi đỏ và vết xước, đúng như bộ nhân vật cố định của game.
+IM_ASTRO = (
+    'in a dusty white and orange Horizon IV Mars surface suit, hard white '
+    'shell torso and limbs with rust orange fabric joint panels at the '
+    'shoulders, hips and knees, a small mission patch on the chest, the '
+    'suit covered in fine red dust and scuff marks, gloves off and hooked '
+    'at his waist'
+)
 
 # ---------------------------------------------------------------- mô tả asset
 
@@ -538,6 +673,52 @@ ASSETS = {
             'no people in frame'
         ),
         'note': 'hồi tưởng: chia tay ở cửa',
+        'kind': 'scene',
+    },
+
+    # Tam anh gia dinh. Day la vat pham nguoi choi mo ra xem trong tui
+    # do o man can cu, nen phai doc ra ngay la anh chup vo va con, khong
+    # phai anh chung chung. Chup doc, kho in thuong, co nep gap va bang
+    # keo dan o mep tren dung nhu truyen ke.
+    'mem-family-photo': {
+        'prompt': (
+            'a creased colour photograph lying on a dark table, portrait '
+            'orientation, showing a man in a plain shirt kneeling beside a '
+            'woman with long dark hair, and between them a small girl about '
+            'five years old held in the woman arms, the three of them in a '
+            'warm apartment kitchen with a window behind, the photo itself '
+            'visibly worn with a white crease running across one corner and '
+            'a strip of black electrical tape stuck to the top edge, soft '
+            'natural indoor light, warm amber tones, shot from directly '
+            'above so the photo fills the frame, no text, no watermark'
+        ),
+        'note': 'tam anh gia dinh: vo va con gai, vat pham mo trong tui do',
+        'kind': 'scene',
+    },
+    # Hai canh bo sung cho doan hoi tuong: con gai co mat trong truyen
+    # thi phai co hinh, neu khong loi ke nhac toi con ma tranh chi co
+    # hai nguoi la lech.
+    'bg-kid-doorway': {
+        'prompt': (
+            'a small girl about five years old standing in a lit apartment '
+            'doorway at dawn, holding a folded piece of paper in both hands, '
+            'hair sleep tousled, wearing pyjamas, the corridor behind her '
+            'dark and cool blue, the flat behind her warm amber, seen from '
+            'adult eye level looking down, no text'
+        ),
+        'note': 'hoi tuong: con gai dung o nguong cua buoi sang',
+        'kind': 'scene',
+    },
+    'bg-family-kitchen-night': {
+        'prompt': (
+            'a family of three sitting on the kitchen floor with their backs '
+            'against the lower cupboards at three in the morning, a man in a '
+            'plain shirt, a woman with long dark hair, and a small girl '
+            'asleep leaning against the woman shoulder, the flat half packed '
+            'with cardboard boxes stacked nearby, only the fridge light and '
+            'one warm lamp on, quiet and tired, no text'
+        ),
+        'note': 'hoi tuong: ba nguoi ngoi bep luc ba gio sang',
         'kind': 'scene',
     },
 
@@ -992,6 +1173,607 @@ ASSETS = {
         'kind': 'popup',
         'style': STYLE_POPUP,
     },
+
+    # ---------- tám cảnh kết thúc thua ----------
+    # Cùng một khối style cho cả tám, để màn kết thúc trông như một bộ.
+    # Nhấn mạnh ba lần "no text" vì model hay vẽ chữ lên màn hình thiết bị.
+    'ending_hypoxia': {
+        'prompt': (
+            'interior of a Mars habitat module with the red emergency lighting '
+            'on, wide 16:9 composition, deep shadow in the corners, '
+            'an astronaut in a slate grey coverall slumped forward over the '
+            'life support control console, one arm hanging, helmet off and '
+            'resting on the desk, face turned away and not readable, '
+            'the console screens show a flat dead green line where the oxygen '
+            'graph used to trace, a dark red warning lamp washing the wall, '
+            'frost forming on the inner face of the window, dust film on every '
+            'surface, scattered printouts on the floor, no text anywhere'
+        ),
+        'note': 'ending: thiếu oxy, gục bên bảng điều khiển',
+        'kind': 'ending',
+        'style': ENDING_STYLE,
+        'size': '1600x900',
+    },
+    'ending_dehydration': {
+        'prompt': (
+            'close in on a dusty Mars habitat engineering bench, wide 16:9 '
+            'composition, '
+            'the ECLSS water recycling unit standing open and bone dry, the '
+            'inner trays pulled out and empty, a single amber fault lamp '
+            'glowing on its front panel, '
+            'an astronaut in a slate grey coverall sitting on the floor with '
+            'his back against the bulkhead, knees up, head tipped back, '
+            'exhausted, face in shadow and not readable, '
+            'a cracked empty water bottle lying on its side with no drop left '
+            'in it, red dust drifted against the skirting, '
+            'cold white lamp light from above against warm amber bounce, '
+            'no text anywhere'
+        ),
+        'note': 'ending: hết nước, bình ECLSS rỗng',
+        'kind': 'ending',
+        'style': ENDING_STYLE,
+        'size': '1600x900',
+    },
+    'ending_starvation': {
+        'prompt': (
+            'interior of a Mars habitat galley, wide 16:9 composition, '
+            'a food locker hanging open and completely empty, bare shelves, '
+            'torn silver foil ration pouches scattered across the floor and '
+            'under the table, all of them flattened and empty, '
+            'one dented metal tray with nothing on it, '
+            'a weak single overhead lamp barely lighting the counter, deep '
+            'shadow filling the rest of the room, '
+            'an astronaut sitting at the table with his head in his hands, '
+            'shoulders thin, seen from behind so the face is not visible, '
+            'red dust on the floor tiles, no text anywhere'
+        ),
+        'note': 'ending: hết lương thực, tủ khẩu phần trống',
+        'kind': 'ending',
+        'style': ENDING_STYLE,
+        'size': '1600x900',
+    },
+    'ending_blackout': {
+        'prompt': (
+            'interior of a Mars habitat at night with all power gone, wide 16:9 '
+            'composition, nearly total darkness lit only by one handheld torch '
+            'beam, '
+            'ice crystals grown across the inside of the window glass, and '
+            'beyond the glass a red dust storm pressing against the pane, '
+            'an astronaut in a thermal jacket curled up in the corner hugging '
+            'his knees, the torch on the floor beside him throwing a hard cone '
+            'of pale light and a long shadow, '
+            'every console dark, frost on the metal, breath fog in the beam, '
+            'cold blue white torch light against the deep rust glow outside, '
+            'no text anywhere'
+        ),
+        'note': 'ending: mất điện trong bão, băng trên kính',
+        'kind': 'ending',
+        'style': ENDING_STYLE,
+        'size': '1600x900',
+    },
+    'ending_orbit_miss': {
+        'prompt': (
+            'deep space view of a small damaged rescue spacecraft tumbling out '
+            'of control past Mars, wide 16:9 composition, '
+            'Mars filling the lower right of frame as a huge rust red disc with '
+            'a thin pale atmosphere rim and Valles Marineris cutting across it, '
+            'the ship in the upper left, silhouette lit hard on one side by the '
+            'sun, one solar panel bent and one engine bell cold, '
+            'a thin trail of venting gas curling away from a cracked fitting, '
+            'the ship already drifting out of the frame into black, '
+            'hard white sunlight and absolute black shadow, dust of stars, '
+            'the hull is completely bare metal, not a single marking, no decal, '
+            'no serial number, no stencil, no hull code, no insignia, '
+            'no text anywhere'
+        ),
+        'note': 'ending: trượt quỹ đạo, tàu trôi vào bóng tối',
+        'kind': 'ending',
+        'style': ENDING_STYLE + ', the spacecraft hull is plain unmarked '
+                 'panelling with no lettering of any kind',
+        'size': '1600x900',
+    },
+    'ending_mutiny': {
+        'prompt': (
+            'interior of a cramped spacecraft cockpit, wide 16:9 composition, '
+            'three astronauts in slate grey flight suits standing with their '
+            'backs turned to each other, one at the left window, one at the '
+            'right console, one at the centre hatch, faces and heads turned '
+            'away, bodies rigid with tension, '
+            'a navigation screen glowing cyan at the centre showing a curved '
+            'return trajectory arcing back toward a small blue Earth, '
+            'loose checklists and a torn crew schedule drifting on the deck, '
+            'cold cyan screen light under warm amber cabin lamps, deep shadow '
+            'between the three figures, no text anywhere'
+        ),
+        'note': 'ending: binh biến, ba người quay lưng',
+        'kind': 'ending',
+        'style': ENDING_STYLE,
+        'size': '1600x900',
+    },
+    'ending_comms_lost': {
+        'prompt': (
+            'interior of a Mars habitat communications station at night, wide '
+            '16:9 composition, '
+            'the whole console buried under white static and rolling noise '
+            'bands, three screens all filled with snow, cables hanging loose, '
+            'a red carrier loss lamp lit on the panel, '
+            'through the window behind, a large dish antenna stands dead still '
+            'against a black night sky with Mars\'s two small moons and a band '
+            'of stars, its feed horn pointed at nothing, '
+            'red dust piled on the sill, cold white screen glow against the '
+            'rusted metal, no text anywhere'
+        ),
+        'note': 'ending: mất liên lạc, màn hình nhiễu, chảo DSN đứng im',
+        'kind': 'ending',
+        'style': ENDING_STYLE,
+        'size': '1600x900',
+    },
+    'ending_edl_crash': {
+        'prompt': (
+            'wide landscape view of a rocky Martian plain at dusk, 16:9 '
+            'composition, '
+            'a black column of smoke and burning debris driving down out of an '
+            'orange dust sky and slamming into the jagged boulder field in the '
+            'middle distance, a bright flash of impact light under the smoke, '
+            'scattered wreckage panels and a torn parachute canopy strewn across '
+            'the rocks, '
+            'far off to the left the squat habitat module stands with red '
+            'emergency beacons blinking on its roof, '
+            'a lone astronaut in a white EVA suit standing small in the '
+            'foreground watching, back to camera, '
+            'long shadows, dust haze, no text anywhere'
+        ),
+        'note': 'ending: hạ cánh thất bại, vệt khói đen',
+        'kind': 'ending',
+        'style': ENDING_STYLE,
+        'size': '1600x900',
+    },
+
+    # ---------- năm lớp nền cho Giai đoạn 2 ----------
+    # Mỗi ảnh là một lớp nằm SAU nội dung SVG của feature, nên bố cục phải
+    # chừa khoảng lặng ở giữa và để chi tiết dồn về mép. Tên bắt đầu bằng
+    # p2- để process-assets.py nhặt riêng, không lẫn với bộ bg- của
+    # Giai đoạn 1.
+    'p2-radar-room': {
+        'prompt': (
+            'interior of a NASA mission control room at night, wide 16:9 '
+            'composition, seen from behind the tiered rows of consoles, '
+            'two enormous projection screens hang side by side on the dark '
+            'far wall, both screens filled with a soft cyan radar glow and '
+            'orbit track lines but no readable writing of any kind, '
+            'a plain circular blue and red agency emblem decal centred '
+            'between the two screens, dim and unlit, '
+            'rows of desk consoles stepping down toward the screens with '
+            'small amber and cyan indicator lamps, empty swivel chairs, '
+            'one or two flight controllers seated far away and seen only as '
+            'dark silhouettes from behind, '
+            'cold cyan screen light washing up onto faces and desk edges, '
+            'deep shadow in the ceiling, tense waiting atmosphere'
+        ),
+        'note': 'Giai đoạn 2: phòng điều khiển DSN ban đêm, lớp nền màn bắt sóng',
+        'kind': 'p2scene',
+        'style': P2_SCENE_STYLE_CREW,
+        'size': '1600x900',
+    },
+    'p2-assembly-bay': {
+        'prompt': (
+            'interior of an enormous spacecraft assembly building, wide 16:9 '
+            'composition, cathedral scale, '
+            'a high steel truss ceiling with two overhead gantry cranes and '
+            'hanging work platforms, '
+            'in the centre a heavy raised assembly stand holding a half '
+            'built interplanetary spacecraft, bare hull ribs, open panels '
+            'and exposed cabling, scaffolding wrapped around its lower half, '
+            'hard cold white industrial floodlights raking down from the '
+            'ceiling in visible beams with floating dust in them, '
+            'polished concrete floor with yellow safety line markings and a '
+            'red walkway stripe, scattered tool carts at the edges, '
+            'no people, everything still and waiting'
+        ),
+        'note': 'Giai đoạn 2: xưởng lắp ráp tàu, lớp nền màn ghép tàu',
+        'kind': 'p2scene',
+        'style': P2_SCENE_STYLE,
+        'size': '1600x900',
+    },
+    'p2-orbit-map': {
+        'prompt': (
+            'comic book panel illustration, drawn with a brush pen and '
+            'coloured flat, 16:9 widescreen panel, '
+            'deep space view, wide 16:9 composition, seen from far outside '
+            'both planets, '
+            'a small blue Earth low in the bottom left corner, its night '
+            'side toward the viewer with a thin cyan atmospheric rim, '
+            'a large rust red Mars high in the top right corner, half lit '
+            'by hard white sunlight, its surface showing dark canyon scars, '
+            'between the two planets a single thin glowing transfer arc '
+            'curves across the black, a hairline of pale amber light with a '
+            'faint cyan haze around it, '
+            'dense star field behind, a soft dusty nebula smear in the lower '
+            'right, '
+            'both planets drawn with a hard black inked outline, flat cel '
+            'shaded colour blocks in two or three tones, visible halftone '
+            'dot texture in the shadow side, screen printed comic colour, '
+            'empty centre of frame, no spacecraft anywhere, no labels'
+        ),
+        'note': 'Giai đoạn 2: bản đồ quỹ đạo Trái Đất tới Sao Hỏa',
+        'kind': 'p2scene',
+        'style': P2_SCENE_STYLE,
+        'size': '1600x900',
+    },
+    'p2-edl-sky': {
+        'prompt': (
+            'high aerial view looking down onto the Martian surface at dusk, '
+            'wide 16:9 composition, '
+            'the sky occupies the top third and is thick amber dust haze lit '
+            'from a low sun off frame right, the horizon softened into the '
+            'haze, '
+            'below it a jagged field of broken rock and boulders with long '
+            'shadows, '
+            'a flat open plain sits in the middle of the frame with a fine '
+            'grid of faint wheel tracks and a few small craters, '
+            'in the middle of that plain one tiny bright amber point of light '
+            'marks a portable landing beacon, small in frame but clearly '
+            'glowing, '
+            'no spacecraft, no parachute, no people, no structures'
+        ),
+        'note': 'Giai đoạn 2: bầu trời Sao Hỏa lúc hạ cánh, lớp nền hoạt cảnh EDL',
+        'kind': 'p2scene',
+        'style': P2_SCENE_STYLE,
+        'size': '1600x900',
+    },
+    'p2-stars-bg': {
+        'prompt': (
+            'deep star field background, wide 16:9 composition, '
+            'almost black space with a dense field of small sharp stars of '
+            'varying brightness, '
+            'a faint pale Milky Way band running diagonally from the lower '
+            'left to the upper right, soft and dusty rather than bright, '
+            'two very faint cool nebulae, one cyan and one dull amber, '
+            'no planets, no spacecraft, no objects in the foreground, '
+            'even and calm across the whole frame, dark enough for text to '
+            'sit on top'
+        ),
+        'note': 'Giai đoạn 2: nền trời sao dùng chung cho cả Phase 2',
+        'kind': 'p2scene',
+        'style': P2_SCENE_STYLE,
+        'size': '1600x900',
+    },
+
+    # ---------- huy hiệu màn chờ tải ----------
+    # Huy hiệu tròn kiểu NASA mission patch, nền trong suốt, không chữ.
+    # Vẽ nét mảnh trên nền xám phẳng để hậu kỳ tách alpha, rồi thu về
+    # 512x512. Màu khoá theo bảng màu game: hổ phách và xanh lơ trên
+    # nền tối, đỏ cam cho Sao Hoả.
+    'loading-emblem': {
+        'prompt': (
+            'flat vector mission patch emblem, perfectly circular badge seen '
+            'straight on, centred in frame, '
+            'outer ring is a thin brushed steel grey rim with fine tick marks '
+            'around it like the bezel of a gauge or a stopwatch dial, short '
+            'evenly spaced radial ticks, no numerals, '
+            'inside the ring a flat small Mars globe in warm rust orange '
+            '#C84B31 with a few darker ochre surface blotches, '
+            'a single thin ellipse orbit line in pale data cyan #4FB8C9 '
+            'crossing the planet diagonally, drawn as a hairline stroke, '
+            'one tiny spacecraft dot in pale amber #E8A33D sitting on the '
+            'orbit line at the upper right, '
+            'thin uniform line weight everywhere, minimal flat design, '
+            'two colour flat fills only, no shading gradient, no glow, '
+            'no text, no letters, no numbers, no logo, no watermark, '
+            'no border frame around the canvas, no drop shadow, '
+            'nothing else in the frame'
+        ),
+        'note': 'huy hiệu: huy hiệu tròn màn chờ tải, nền trong suốt',
+        'kind': 'emblem',
+        'style': (
+            'clean technical vector illustration, flat design, '
+            'crisp hairline strokes, high contrast against the background, '
+            'readable at 96 pixels wide'
+        ),
+        'key_bg': True,
+        'size': '1024x1024',
+    },
+
+    # ---------- bảy khung chuyển tiếp Giai đoạn 1 sang Giai đoạn 2 ----------
+    # Mười ba khung tất cả, chia cho hai sub chạy song song: bảy khung ở
+    # đây (im-01 tới im-07) và sáu khung còn lại do sub kia lo. Hai bộ phải
+    # đứng cạnh nhau trong cùng một đoạn phim nên dùng chung khối nhân vật
+    # IM_CHARS bên dưới, chép nguyên văn, không sửa một chữ.
+    #
+    # Tên asset giữ tiền tố bg- để process-assets.py nhặt vào vòng quét
+    # bg-*.png và xuất WebP 1600x900 vào src/assets/art/.
+
+    'bg-im-01': {
+        'prompt': (
+            'view from deep space, planet Earth glowing blue in the centre of '
+            'a star filled black sky, a bright cyan radio beam shooting down '
+            'from space toward a huge parabolic dish antenna of the Deep Space '
+            'Network on Earth surface, concentric radio wave rings spreading '
+            'from the dish, continents visible through thin cloud, night side '
+            'of Earth with city lights, no people'
+        ),
+        'note': 'chuyển tiếp 1: tia tín hiệu bay tới Trái Đất',
+        'kind': 'scene',
+        'style': IM_STYLE_SPACE,
+        'size': '1600x900',
+    },
+    'bg-im-02': {
+        'prompt': (
+            'wide shot inside the NASA mission control room described above, '
+            'shot from high angle over the whole room so the chaos reads at a '
+            'glance, '
+            + IM_CHARS + ', '
+            'both giant projection screens show red warning graphs and red '
+            'telemetry failure charts, and the red light of those screens is '
+            'the only key light in the room, '
+            'NOBODY is sitting: every single engineer in shirtsleeves is '
+            'standing, dozens of them on their feet at once, most pushed back '
+            'from their desks, some with both hands pressed to their head, '
+            'some turning to shout at the person beside them, some hurrying '
+            'between the rows of desks carrying fistfuls of printouts, '
+            'loose printed sheets scattered across the floor and the desks, '
+            'several overturned chairs, '
+            'tense chaotic atmosphere, red emergency light washing over the '
+            'whole room, mood of a disaster that just happened'
+        ),
+        'note': 'chuyển tiếp 2: phòng điều khiển NASA hỗn loạn',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-03': {
+        'prompt': (
+            'close shot of a single computer monitor in a dark control room, '
+            'the screen blazing bright with a large glowing envelope icon and '
+            'a pulsing amber and cyan exclamation mark, the light from the '
+            'screen spilling across the desk and keyboard, the rest of the '
+            'room dark and out of focus behind, papers and a headset on the '
+            'desk, nobody visible'
+        ),
+        'note': 'chuyển tiếp 3: màn hình bật sáng có thư tới',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-04': {
+        'prompt': (
+            'SPLIT PANEL LAYOUT, two horizontal panels with a clean black '
+            'gutter between them, the gutter running edge to edge and filled '
+            'with flat black, no border around the outside of the image, '
+            'LEFT PANEL: small inset of the glowing monitor with the envelope '
+            'icon seen from a distance in the dark room. '
+            'RIGHT PANEL: tight close up of the NASA flight controller '
+            'described above, shot from the side, he has just jumped up from '
+            'his chair so fast the chair is tipping backwards, eyes wide open '
+            'in shock, mouth open, one arm pointing straight at the screen, '
+            'glasses catching the screen glow, dramatic rim light, '
+            + IM_CHARS
+        ),
+        'note': 'chuyển tiếp 4: nhân viên kinh ngạc, chia hai ô ngang',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-05': {
+        'prompt': (
+            'wide shot inside the NASA mission control room described above, '
+            + IM_CHARS + ', '
+            'the entire room erupting in celebration, everyone on their feet, '
+            'engineers throwing armfuls of paper printouts into the air so '
+            'the sheets fill the upper third of the frame, people hugging '
+            'each other, faces jubilant and tearful, arms raised, both giant '
+            'screens now showing bright green and cyan data, warm amber and '
+            'cyan light mixing, joyful chaotic energy'
+        ),
+        'note': 'chuyển tiếp 5: cả phòng tung giấy ăn mừng',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-06': {
+        'prompt': (
+            'CAMERA IS BEHIND THE GROUP, HIGH OVER THEIR HEADS, LOOKING DOWN: '
+            'we see the backs of their heads and shoulders, NOT their faces '
+            'facing the camera, '
+            'a dozen engineers crowded shoulder to shoulder around one '
+            'central desk in the dim control room, all leaning in toward the '
+            'screen, bodies tense and silent, '
+            'the flight controller described above sits at the centre of the '
+            'huddle with his hand resting on a computer mouse, seen from '
+            'behind and above over the shoulders of the people standing '
+            'around him, '
+            'screen glow lighting the underside of their faces and the desk '
+            'from below, nobody speaking, the moment before a click, '
+            + IM_CHARS
+        ),
+        'note': 'chuyển tiếp 6: cả nhóm nín thở quanh bàn',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-07': {
+        'prompt': (
+            'SPLIT PANEL LAYOUT, two horizontal panels with a clean black '
+            'gutter, the gutter running edge to edge and filled with flat '
+            'black, no border around the outside of the image, '
+            'LEFT PANEL: the same tight group of engineers crowded around the '
+            'desk, tense faces lit from below by the screen, exactly as in '
+            'the previous panel so the scene reads as continuous. '
+            'RIGHT PANEL: extreme macro close up of a male hand pressing down '
+            'on a wired computer mouse, the index finger pressing the button, '
+            'the mouse on a desk mat, cyan screen light on the knuckles, the '
+            'moment of the click frozen, comic book impact, '
+            + IM_CHARS
+        ),
+        'note': 'chuyển tiếp 7: cận cảnh cú click, chia hai ô ngang',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+
+    # ---------- sáu khung cuối của đoạn chuyển tiếp (8 tới 13) ----------
+    # Sub thứ hai lo sáu khung này. Khối nhân vật IM_CHARS và phong cách
+    # IM_STYLE chép nguyên văn từ nửa trên, không sửa một chữ, để mười ba
+    # khung ghép lại thành một đoạn phim liền mạch.
+    #
+    # Người thứ ba của bộ tranh: phi hành gia mắc kẹt. Khối IM_ASTRO dưới
+    # đây là mô tả cố định cho anh ta, dùng y nguyên ở mọi khung có anh ta.
+    # Bộ đồ Horizon IV: vỏ cứng trắng, lớp vải lót cam gỉ ở vai hông đầu
+    # gối, phủ bụi đỏ và vết xước. Không có khối này thì mỗi khung model vẽ
+    # một bộ đồ khác nhau và người xem mất dấu nhân vật.
+
+    'bg-im-08': {
+        'prompt': (
+            'SPLIT PANEL LAYOUT, three comic panels separated by clean black '
+            'gutters, two small panels of equal size side by side across the '
+            'top row and one large panel filling the whole bottom row, every '
+            'gutter filled with flat solid black running edge to edge, no '
+            'border around the outside of the image, '
+            'TOP LEFT PANEL: a tight crowd of shirt sleeved NASA engineers '
+            'packed shoulder to shoulder leaning in over one desk, tense '
+            'faces lit hard from below by a screen, jaws tight, eyes fixed '
+            'downward, the backs of two heads at the panel edge, '
+            'TOP RIGHT PANEL: extreme close up of a male hand pressing down '
+            'on a computer mouse, knuckles taut, one finger on the button, '
+            'hand and mouse lit by a strong cyan glow from the screen, a dark '
+            'desk mat below, the moment of the click frozen, '
+            'BOTTOM LARGE PANEL: straight on view of a computer monitor '
+            'screen filling the whole panel edge to edge, the screen showing '
+            'a glowing digital envelope graphic bursting open, bright light '
+            'rays shooting out of the opened flap, cyan and amber particles '
+            'swirling out of the burst, the burst light spilling off the '
+            'glass and reflecting across the glossy desk surface below, '
+            + IM_CHARS
+        ),
+        'note': 'chuyển tiếp 8: ba ô, đám đông, tay bấm chuột, phong bì bung sáng',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    # Khung 9 là khung DUY NHẤT có bảng trắng để chữ HTML đè lên. Prompt phải
+    # khoá ba lần ý "bảng trống": nếu chỉ nói "blank clipboard" thì model vẽ
+    # đầy dòng gạch và chữ giả, và lớp chữ thật chồng lên sẽ thành hai lớp
+    # chữ đè nhau. Bảng phải thẳng, vuông góc với máy quay, phẳng mặt.
+    'bg-im-09': {
+        'prompt': (
+            'photograph style framing seen from inside a Mars habitat module, '
+            'the shot is framed by a fixed camera: the corner of a riveted '
+            'metal bulkhead cuts into the upper left of the frame and a dark '
+            'steel mount bar fills the bottom edge, one small glowing red '
+            'recording dot sits high in the top corner, surveillance camera '
+            'feed look, '
+            'in the centre of the frame a stranded astronaut ' + IM_ASTRO +
+            ', stands facing the camera dead on, his helmet popped off and '
+            'clipped to his belt at the hip so his dusty tired face is fully '
+            'visible, grime on his cheeks, dust in his hair, hopeful eyes, '
+            'clearly alive, breathing, '
+            'he holds up a large blank white clipboard with both hands at '
+            'chest height, the clipboard is perfectly straight and square to '
+            'the camera, its surface is completely blank, empty, plain white, '
+            'with no lines, no writing, no header, no text of any kind, '
+            'nothing printed on the paper clip or the board, '
+            'warm amber habitat lighting behind him, dust and scuff marks on '
+            'the suit, shallow depth of field so the clipboard stays sharp'
+        ),
+        'note': 'chuyển tiếp 9: phi hành gia giơ bảng trắng, góc camera giám sát',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    # Khung 10 là bảng số liệu để HTML đổ số thật vào. Bốn hàng thanh ngang
+    # và các ô số phải TRỐNG: model rất hay tự vẽ số liệu vào, lúc đó số
+    # của game đè lên số của tranh, đọc không ra.
+    'bg-im-10': {
+        'prompt': (
+            'straight on view of a large computer monitor filling most of the '
+            'frame inside a dark control room, the monitor seen dead on with '
+            'its bezel just inside the frame edges, '
+            'the screen shows a spacecraft telemetry analysis dashboard: four '
+            'wide horizontal bar chart rows stacked down the frame, each row a '
+            'thin glowing cyan track box with an empty channel, every bar fill '
+            'deliberately left completely empty, no bar inside any track, no '
+            'fill, no value, '
+            'four blank label boxes at the left of the rows left completely '
+            'empty and unmarked, every number field and readout left empty, '
+            'no digits, no characters anywhere on the screen, '
+            'small telemetry waveform graphs traced in the corners of the '
+            'screen, thin grid lines, cyan and amber interface elements on a '
+            'deep dark blue background, '
+            'a few engineers silhouetted at the left and right edges of the '
+            'frame watching the screen, faces unreadable in shadow, the screen '
+            'glow reflecting along the desk in the foreground'
+        ),
+        'note': 'chuyển tiếp 10: bảng phân tích telemetry, thanh và ô số để trống',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-11': {
+        'prompt': (
+            'wide shot of the NASA mission control room from a low angle, the '
+            'camera near the floor of the tiered rows looking up, '
+            'the mission director stands at the centre of frame on the raised '
+            'command platform behind the front console, his right palm slammed '
+            'flat down on the console desk in front of him, arm rigid, weight '
+            'leaning into the blow, '
+            'the impact captured as a frozen instant: a few small scattered '
+            'papers lifting and tilting off the desk surface around his hand, '
+            'one sheet caught in the air, a coffee cup rocking on its base, '
+            'every engineer in the room has turned toward him, mid turn, all '
+            'motion frozen, dozens of faces angled up at the platform, '
+            'dramatic backlight from the giant projection screens behind him '
+            'silhouetting his shoulders and outlining his vest in bright cyan '
+            'rim light, his face in shadow, tense focused atmosphere, '
+            + IM_CHARS
+        ),
+        'note': 'chuyển tiếp 11: giám đốc đập tay xuống bàn, cả phòng quay lại',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-12': {
+        'prompt': (
+            'medium close up of the NASA mission director standing behind a '
+            'lectern, framed from the chest up, the lectern edge just visible '
+            'at the bottom of frame, '
+            'his jaw set hard, eyes burning with fierce determination, brow '
+            'furrowed, mouth open mid sentence, one hand gripping the lectern '
+            'edge, '
+            'harsh key light from one side carving deep black shadows across '
+            'the far side of his face, the giant NASA projection screens '
+            'behind him thrown far out of focus as soft glowing cyan and amber '
+            'shapes, the dark room falling away into shadow behind, '
+            'the frozen instant of a speech that changes everything, '
+            + IM_CHARS
+        ),
+        'note': 'chuyển tiếp 12: cận giám đốc sau bục, khoảnh khắc bài phát biểu',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
+    'bg-im-13': {
+        'prompt': (
+            'DRAMATIC DIAGONAL COMIC LAYOUT, the frame is cut by a strong '
+            'diagonal gutter running from the lower left corner up to the '
+            'upper right corner, the gutter filled with flat solid black, '
+            'INSET PANEL in the upper left corner above the diagonal: the '
+            'mission director at a lectern caught mid shout, his right fist '
+            'thrust straight up in the air, mouth wide open, the soaked '
+            'emotional peak of the speech, '
+            'THE REST OF THE FRAME below and right of the diagonal: an entire '
+            'NASA team of engineers and astronauts seen from a dramatic low '
+            'angle looking up, dozens of them on their feet, fists thrust high '
+            'in the air, faces ablaze with determination, mouths open mid '
+            'cheer, ranks of bodies filling the panel from edge to edge, '
+            'heroic low angle hero shot, powerful cyan and amber light '
+            'blasting from behind them through haze, triumphant energy, '
+            + IM_CHARS
+        ),
+        'note': 'chuyển tiếp 13: ô chéo, giám đốc hô, cả đội giơ nắm đấm',
+        'kind': 'scene',
+        'style': IM_STYLE_ROOM,
+        'size': '1600x900',
+    },
 }
 
 
@@ -1042,13 +1824,19 @@ def find_key():
     return None
 
 
-def call_api(key, prompt, timeout):
+def call_api(key, prompt, timeout, size=None):
     """Gọi một lần. Trả (ảnh bytes, None) hoặc (None, lỗi)."""
-    payload = json.dumps({
+    body_req = {
         'model': MODEL,
         'prompt': prompt,
         'n': 1,
-    }).encode('utf-8')
+    }
+    # Khung dọc cho sprite nhân vật. Model có thể bỏ qua tham số này và trả
+    # khung ngang 1376x768 mặc định; prompt đã dặn tỉ lệ người chiếm khung
+    # nên vẫn dùng được, nhưng xin đúng khung dọc thì chân không bị tràn.
+    if size:
+        body_req['size'] = size
+    payload = json.dumps(body_req).encode('utf-8')
 
     req = urllib.request.Request(
         f'{API_BASE}/images/generations',
@@ -1100,6 +1888,19 @@ def out_dir_for(spec):
     return SPRITE_DIR if kind in ('char', 'icon-sprite', 'popup') else OUT_DIR
 
 
+# Khung sinh ảnh cho sprite nhân vật: dọc, cao 640px quy đổi (tỉ lệ 3:4 dọc
+# hơn khung ngang 1376x768 mặc định của model). Bản trước để model tự chọn
+# khung, nó trả 1376x768 rồi vẽ người lấp đầy chiều cao khung ngang, chân
+# tràn ra ngoài mép dưới. Khung dọc cộng với câu "occupies about 80 percent
+# of the frame height" trong STYLE_CHAR thì chân còn nguyên.
+CHAR_FRAME = {'char': '896x1152'}
+
+
+def frame_size_for(spec):
+    """Kích thước khung xin từ API, theo kind. None là để model tự chọn."""
+    return spec.get('size') or CHAR_FRAME.get(spec.get('kind'))
+
+
 def generate(key, name, spec):
     """Sinh một asset, có thử lại khi gặp lỗi tạm thời."""
     d = out_dir_for(spec)
@@ -1124,7 +1925,7 @@ def generate(key, name, spec):
     for attempt in range(1, MAX_ATTEMPTS + 1):
         t0 = time.time()
         timeout = TIMEOUT_FIRST if attempt == 1 else TIMEOUT_NEXT
-        img, err = call_api(key, full_prompt, timeout)
+        img, err = call_api(key, full_prompt, timeout, size=frame_size_for(spec))
         elapsed = time.time() - t0
 
         if img:

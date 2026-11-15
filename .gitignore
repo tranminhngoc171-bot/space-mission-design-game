@@ -28,3 +28,7 @@ desktop.ini
 *.zip
 *.7z
 *.iso
+
+# Ảnh trung gian: bản đã che watermark của API sinh ảnh.
+# scripts/wm-clean.py ghi ra đây, process-assets.py đọc từ đây.
+src/assets/gen-clean/
