@@ -354,16 +354,19 @@ P2_SCENE_STYLE_CREW = P2_SCENE_STYLE.replace(
 # cố định mới giữ viên kiểm soát và giám đốc nhiệm vụ là cùng một người
 # qua nhiều khung.
 IM_CHARS = (
-    'consistent character design: NASA flight controller is a young man in '
+    'consistent character design: the flight controller is a young man in '
     'his late twenties with short dark hair, rectangular black-framed '
-    'glasses, white dress shirt with a dark navy tie, NASA badge clipped to '
-    'his chest pocket; the NASA mission director is a man in his late '
-    'fifties with salt and pepper grey hair, wearing a light grey flight '
-    'director vest over a white shirt with rolled up sleeves, stern '
-    'determined jaw; the control room has two huge projection screens '
-    'mounted on a dark wall with the NASA logo centered between them, '
-    'tiered rows of computer desks below, blue cyan glow from monitors, '
-    'dark navy and amber lighting'
+    'glasses, a plain white dress shirt with a dark navy tie and NO badge, '
+    'NO clip, NO ID card and NO patch on his shirt or chest pocket, his '
+    'shirt is entirely plain and unmarked; the mission director is a man in '
+    'his late fifties with salt and pepper grey hair, wearing a light grey '
+    'flight director vest over a white shirt with rolled up sleeves, stern '
+    'determined jaw, the vest is plain and unmarked with no patch and no '
+    'lettering; the control room has two huge projection screens mounted on '
+    'a dark wall, the wall between and around the screens is plain bare '
+    'unmarked panelling with no emblem, no badge and no lettering of any '
+    'kind, tiered rows of computer desks below, blue cyan glow from '
+    'monitors, dark navy and amber lighting'
 )
 
 # Phong cách chung của cả mười ba khung, đúng như bản mô tả của tác giả:
@@ -401,12 +404,59 @@ IM_STYLE_ROOM = IM_STYLE
 IM_STYLE_NO_CORNER = IM_STYLE.replace(
     'leave a calm uncluttered area in one upper or lower corner so a dialogue '
     'box can sit on top of the art later, ',
-    'fill the frame with rendered scene detail from edge to edge, '
+    'fill the frame with rendered scene detail from edge to edge, ',
+)
+
+# Khối cấm phù hiệu, dán vào cuối prompt của bốn khung 10 tới 13.
+# Lý do: IM_CHARS có câu "the control room has ... the NASA logo centered
+# between them" nên model luôn vẽ huy hiệu meatball lên tường, và vì nhân
+# vật mặc đồng phục nên nó vẽ thêm miếng vá tròn trên ngực. Luật của dự án
+# là tuyệt đối không có logo NASA ở bất kỳ đâu, nên phải nói ngược lại
+# ngay sau IM_CHARS, đặt ở CUỐI prompt để câu sau thắng câu trước.
+IM_NO_BADGE = (
+    'HARD RULE, overrides everything above: no logos, no badges, no '
+    'circular emblems, no round patches, no agency roundel, no agency '
+    'lettering anywhere in the image, no letters forming any name, '
+    'the wall between the projection screens is plain dark panelling with '
+    'no logo, no emblem, no plaque and no sign on it, '
+    'every person wears plain unmarked clothing, all shirts, vests and '
+    'suits are completely blank with no patch on any chest, no badge on '
+    'any pocket or sleeve, no embroidered emblem, no name tag, no clip on '
+    'id card, no stitched insignia anywhere, '
+    'no flag of any kind, no banner'
 )
 
 # Khung ngoài không gian không có phòng điều khiển nên không mang khối
 # nhân vật; chỉ giữ phần phong cách và bảng màu cyan của tín hiệu.
 IM_STYLE_SPACE = IM_STYLE
+
+# Bản sạch nhãn hiệu của IM_CHARS, chỉ dùng cho bg-im-02, bg-im-04, bg-im-05.
+# Vì sao cần: IM_CHARS gốc đặt hàng thẳng một "NASA badge" trên ngực và
+# "the NASA logo centered between them" trên tường, nên model vẽ đúng thứ
+# đó và cả ba khung ra đời đều dính logo meatball. Yêu cầu của bộ art là
+# KHÔNG có logo NASA ở bất kỳ đâu, nên ba khung này dùng bản đã bóc sạch:
+# ngực áo để trống, tường giữa hai màn hình để trống, và mọi danh từ riêng
+# đổi thành mô tả chung để model không có cớ vẽ chữ lên tranh.
+# IM_CHARS gốc giữ nguyên vì im-06 tới im-13 do nhánh khác sinh.
+IM_CHARS_CLEAN = (
+    IM_CHARS
+    .replace('NASA flight controller', 'flight controller')
+    .replace('NASA badge clipped to his chest pocket',
+             'a plain blank white ID card clipped to his chest pocket, '
+             'the clothing completely plain and unmarked')
+    .replace('the NASA mission director', 'the mission director')
+    .replace('the NASA logo centered between them',
+             'bare wall between them, nothing mounted there')
+)
+
+# Câu chốt luôn nối vào cuối prompt của ba khung dùng bản sạch. Lặp lại
+# cả cụm "no circular emblem" thay vì chỉ "no logo" vì lần đầu model hiểu
+# "logo" là chữ thương hiệu và vẫn vẽ huy hiệu tròn không chữ.
+CLEAN_BRAND_TAIL = (
+    'no logos, no badges, no circular emblems, no NASA lettering anywhere, '
+    'plain unmarked clothing, every wall surface bare, '
+    'no emblem patch, no round insignia'
+)
 
 # Phi hành gia mắc kẹt của khung 9: mô tả cố định, dùng nguyên văn trong
 # prompt. Bộ đồ Horizon IV: vỏ cứng trắng NASA, lớp vải cam gỉ ở vai hông
@@ -1699,11 +1749,13 @@ ASSETS = {
         'size': '1600x900',
     },
     'bg-im-02': {
+        # Khung vừa quét ra logo NASA trên tường giữa hai màn hình: dùng
+        # IM_CHARS_CLEAN chứ không dùng IM_CHARS, và chốt bằng CLEAN_BRAND_TAIL.
         'prompt': (
-            'wide shot inside the NASA mission control room described above, '
+            'wide shot inside a mission control room, '
             'shot from high angle over the whole room so the chaos reads at a '
             'glance, '
-            + IM_CHARS + ', '
+            + IM_CHARS_CLEAN + ', '
             'both giant projection screens show red warning graphs and red '
             'telemetry failure charts, and the red light of those screens is '
             'the only key light in the room, '
@@ -1715,11 +1767,17 @@ ASSETS = {
             'loose printed sheets scattered across the floor and the desks, '
             'several overturned chairs, '
             'tense chaotic atmosphere, red emergency light washing over the '
-            'whole room, mood of a disaster that just happened'
+            'whole room, mood of a disaster that just happened, '
+            + CLEAN_BRAND_TAIL
         ),
         'note': 'chuyển tiếp 2: phòng điều khiển NASA hỗn loạn',
         'kind': 'scene',
-        'style': IM_STYLE_ROOM,
+        # Lần sinh thứ hai (sau khi bóc logo) model vẽ hẳn một ô chữ nhật
+        # trắng trơn 303x93 px ở góc trên phải, đúng cái bẫy đã ghi ở
+        # IM_STYLE_NO_CORNER: câu "chừa góc trống cho hộp thoại" bị hiểu
+        # thành vẽ ô trắng. Khung này không cần chỗ đặt thoại nên dùng bản
+        # không có câu đó.
+        'style': IM_STYLE_NO_CORNER,
         'size': '1600x900',
     },
     'bg-im-03': {
@@ -1755,13 +1813,15 @@ ASSETS = {
             'gap, '
             'TOP PANEL: small inset of the glowing monitor with the envelope '
             'icon seen from a distance in the dark room. '
-            'BOTTOM PANEL: tight close up of the NASA flight controller '
-            'described above, shot from the side, he has just jumped up from '
+            'BOTTOM PANEL: tight close up of a young control room engineer, '
+            'shot from the side, he has just jumped up from '
             'his chair so fast the chair is tipping backwards and falling '
             'over behind him, the chair visibly tipping over, eyes wide open '
             'in shock, mouth open, one arm pointing straight up at the '
             'screen, glasses catching the screen glow, dramatic rim light, '
-            + IM_CHARS
+            'he wears a plain white dress shirt with a dark navy tie and no '
+            'badge at all, '
+            + CLEAN_BRAND_TAIL
         ),
         'note': 'chuyển tiếp 4: nhân viên kinh ngạc, chia hai ô ngang',
         'kind': 'scene',
@@ -1769,15 +1829,18 @@ ASSETS = {
         'size': '1600x900',
     },
     'bg-im-05': {
+        # Khung vừa quét ra ba huy hiệu tròn kiểu meatball trên ngực áo:
+        # dùng IM_CHARS_CLEAN và chốt bằng CLEAN_BRAND_TAIL.
         'prompt': (
-            'wide shot inside the NASA mission control room described above, '
-            + IM_CHARS + ', '
+            'wide shot inside a mission control room, '
+            + IM_CHARS_CLEAN + ', '
             'the entire room erupting in celebration, everyone on their feet, '
             'engineers throwing armfuls of paper printouts into the air so '
             'the sheets fill the upper third of the frame, people hugging '
             'each other, faces jubilant and tearful, arms raised, both giant '
             'screens now showing bright green and cyan data, warm amber and '
-            'cyan light mixing, joyful chaotic energy'
+            'cyan light mixing, joyful chaotic energy, '
+            + CLEAN_BRAND_TAIL
         ),
         'note': 'chuyển tiếp 5: cả phòng tung giấy ăn mừng',
         'kind': 'scene',
@@ -1801,6 +1864,13 @@ ASSETS = {
             'FULL BLEED ART: the illustration fills the entire frame edge to '
             'edge with drawn scenery and characters, there is no paper margin '
             'and no rectangle of flat white anywhere in the picture, '
+            'EVERY CORNER of the image is filled with painted scenery: the '
+            'ceiling runs to the edges of the frame on both sides, an '
+            'acoustic tile grid with a square ventilation grille, a cable '
+            'tray and two warm downlights, all of it painted in the same dark '
+            'blue grey as the rest of the room, '
+            'never leave a pale empty patch or a light flat shape in any '
+            'corner, the picture is painted edge to edge, '
             'CAMERA POSITION, most important: the camera is placed at the '
             'BACK of the huddle looking FORWARD past the engineers, so in the '
             'foreground of the picture we see only the backs of heads, the '
@@ -1812,7 +1882,7 @@ ASSETS = {
             'turned away from us and cannot be seen, nobody in this picture '
             'looks into the camera, every single person faces away from the '
             'camera or in three quarter back view, '
-            + IM_CHARS
+            + IM_CHARS + ', ' + IM_NO_BADGE
         ),
         'note': ('chuyển tiếp 6: cả nhóm nín thở quanh bàn, không có ô trắng '
                  'trống ở góc nào'),
@@ -1839,7 +1909,7 @@ ASSETS = {
             'down on a wired computer mouse, the index finger pressing the '
             'button, the mouse on a desk mat, cyan screen light on the '
             'knuckles, the moment of the click frozen, comic book impact, '
-            + IM_CHARS
+            + IM_CHARS + ', ' + IM_NO_BADGE
         ),
         'note': 'chuyển tiếp 7: cận cảnh cú click, chia hai ô ngang',
         'kind': 'scene',
@@ -1890,8 +1960,7 @@ ASSETS = {
             'NO blank white rectangle, NO empty white box, NO placeholder '
             'card, NO unmarked panel anywhere on the screen or in any panel '
             'of this page, do not draw any empty white shape at all, '
-
-            + IM_CHARS
+            + IM_CHARS + ', ' + IM_NO_BADGE
         ),
         'note': 'chuyển tiếp 8: ba ô, đám đông, tay bấm chuột, phong bì bung sáng',
         'kind': 'scene',
@@ -1963,7 +2032,8 @@ ASSETS = {
             'deep dark blue background, '
             'a few engineers silhouetted at the left and right edges of the '
             'frame watching the screen, faces unreadable in shadow, the screen '
-            'glow reflecting along the desk in the foreground'
+            'glow reflecting along the desk in the foreground, '
+            + IM_NO_BADGE
         ),
         'note': 'chuyển tiếp 10: bảng phân tích telemetry, thanh và ô số để trống',
         'kind': 'scene',
@@ -1972,7 +2042,7 @@ ASSETS = {
     },
     'bg-im-11': {
         'prompt': (
-            'wide shot of the NASA mission control room from a low angle, the '
+            'wide shot of the mission control room from a low angle, the '
             'camera near the floor of the tiered rows looking up, '
             'the mission director stands at the centre of frame on the raised '
             'command platform behind the front console, his right palm slammed '
@@ -1990,14 +2060,15 @@ ASSETS = {
             'shapes, soft blurred orbit arcs and empty graph panels with no '
             'characters, no glyphs, no blocks of writing, no pseudo text, '
             'no mock letters, no fake interface words anywhere in the image, '
-            'no EXIT sign, no sign of any kind on any wall, the only lettering '
-            'permitted in the entire image is the NASA logo on the wall, '
+            'no EXIT sign, no sign of any kind on any wall, '
+            'there is no lettering of any kind permitted anywhere in the '
+            'entire image, the wall carries no lettering, no logo, no emblem, '
             'the top left of the frame is the dark ceiling and the far wall '
             'filled with the glowing screens, lit scenery only, '
             'NO blank light rectangle, NO empty white box, NO placeholder '
             'panel, NO empty sign board, NO floating flat panel anywhere in '
             'the frame, every surface carries rendered detail or shadow, '
-            + IM_CHARS
+            + IM_CHARS + ', ' + IM_NO_BADGE
         ),
         'note': 'chuyển tiếp 11: giám đốc đập tay xuống bàn, cả phòng quay lại',
         'kind': 'scene',
@@ -2006,7 +2077,7 @@ ASSETS = {
     },
     'bg-im-12': {
         'prompt': (
-            'tight close up of the NASA mission director behind a lectern, '
+            'tight close up of the mission director behind a lectern, '
             'cropped from the shoulders up so the whole frame is filled by '
             'his head and the top of his shoulders, his face large and '
             'central, the lectern is only a dark blurred edge low at the '
@@ -2016,11 +2087,11 @@ ASSETS = {
             'teeth, no visible tongue, no grimace, no snarl, '
             'eyes burning with fierce determination, brow furrowed, '
             'harsh key light from one side carving deep black shadows across '
-            'the far side of his face, the giant NASA projection screens '
+            'the far side of his face, the giant projection screens '
             'behind him thrown far out of focus as soft glowing cyan and amber '
             'shapes, the dark room falling away into shadow behind, '
             'the frozen instant of a speech that changes everything, '
-            + IM_CHARS
+            + IM_CHARS + ', ' + IM_NO_BADGE
         ),
         'note': 'chuyển tiếp 12: cận giám đốc sau bục, khoảnh khắc bài phát biểu',
         'kind': 'scene',
@@ -2037,13 +2108,13 @@ ASSETS = {
             'thrust straight up in the air, mouth wide open, the soaked '
             'emotional peak of the speech, '
             'THE REST OF THE FRAME below and right of the diagonal: an entire '
-            'NASA team of engineers and astronauts seen from a dramatic low '
+            'mission team of engineers and astronauts seen from a dramatic low '
             'angle looking up, dozens of them on their feet, fists thrust high '
             'in the air, faces ablaze with determination, mouths open mid '
             'cheer, ranks of bodies filling the panel from edge to edge, '
             'heroic low angle hero shot, powerful cyan and amber light '
             'blasting from behind them through haze, triumphant energy, '
-            + IM_CHARS
+            + IM_CHARS + ', ' + IM_NO_BADGE
         ),
         'note': 'chuyển tiếp 13: ô chéo, giám đốc hô, cả đội giơ nắm đấm',
         'kind': 'scene',

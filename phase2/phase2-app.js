@@ -526,6 +526,42 @@ const stepById = (id) => STEPS.find((s) => s.id === id) || STEPS[0];
 /* Bốn khoá của bảng thanh đo an toàn, dùng chung cho lúc dựng và lúc vẽ. */
 const GAUGE_KEYS = ['time', 'mass', 'power', 'comms'];
 
+/* ============================================================
+   LỚP PHỦ CỦA BƯỚC 2 VÀ BƯỚC 3
+   feature-cml3-tradespace.js tự dựng xưởng và con tàu nhưng không
+   có sáu nút chỉ dẫn, bảng tổng, đồng hồ sinh tồn hay modal linh
+   kiện. Ba tệp dưới đây lo phần đó, mỗi tệp một việc:
+     feature-assembly-ui.js      sáu nút + bảng tổng + nút NEXT
+     feature-component-modal.js  cửa sổ chọn linh kiện
+     feature-trajectory.js       cửa sổ chọn quỹ đạo bay
+   Nạp mềm từng tệp: thiếu tệp nào thì bước đó vẫn chạy với phần
+   còn lại, không để màn trắng.
+   ============================================================ */
+
+async function loadOptional(file) {
+  if (featureCache.has(file)) return featureCache.get(file);
+  let mod = null;
+  try {
+    mod = await import(BASE + file);
+  } catch (e) {
+    mod = null;
+  }
+  featureCache.set(file, mod);
+  return mod;
+}
+
+/* Nhóm của modal linh kiện ánh xạ sang nhóm của engine. Hai bên dùng
+   tên khác nhau cho cùng một thứ, nên phải có bảng này ở giữa.
+   The component modal groups map onto engine groups. */
+const MODAL_GROUP_TO_ENGINE = {
+  launcher: 'launcher',
+  propellant: 'propellant',
+  spacecraft: 'power',
+  comms: 'comms',
+  supplies: 'supplies',
+  trajectory: 'trajectory',
+};
+
 /* Kết quả nạp module được nhớ lại, để file thiếu chỉ bị gọi một lần
    chứ không thử lại mỗi lần đổi bước. */
 const featureCache = new Map();
@@ -970,10 +1006,15 @@ export async function mountPhase2(options) {
   let state = null;
   let currentStepId = null;
   let currentHandle = null;
+  let currentOverlay = null;
+  let destroyed = false;
   let history = [];
   let toastTimer = 0;
   let unsubscribers = [];
   let summaryShown = false;
+  /* Cờ một lần: chỉ chiếu phân cảnh kết thúc ở lần mở tổng kết
+     đầu tiên. Bấm "chơi lại" rồi thắng lại thì lại chiếu. */
+  let summaryViaTrueEnding = false;
 
   /* ============================================================
      VẼ CHỮ THEO NGÔN NGỮ
@@ -1179,6 +1220,17 @@ export async function mountPhase2(options) {
      ============================================================ */
 
   function destroyCurrent() {
+    closeModal();
+    if (currentOverlay) {
+      const ov = currentOverlay;
+      currentOverlay = null;
+      try {
+        if (typeof ov.destroy === 'function') ov.destroy();
+        else if (ov.root && ov.root.parentNode) ov.root.parentNode.removeChild(ov.root);
+      } catch (e) {
+        /* lớp phủ dọn hỏng thì bỏ qua, không chặn bước sau */
+      }
+    }
     if (!currentHandle) return;
     try {
       if (typeof currentHandle === 'function') currentHandle();
@@ -1287,8 +1339,218 @@ export async function mountPhase2(options) {
       frame.actionsInner.appendChild(buildHint());
     }
 
+    /* Lớp phủ của bước 2 và bước 3. Gắn sau feature vì lớp phủ cần
+       thấy con tàu của cml3 để đo vị trí đường chỉ dẫn.
+       The step 2 and 3 overlays go on after the feature, because the
+       assembly callouts measure the ship that cml3 just drew. */
+    if (currentStepId === step.id && currentHandle) {
+      if (step.id === 'cml3') await mountAssemblyOverlay(host);
+      else if (step.id === 'cml4') await mountGaugeOverlay(host);
+    }
+
     if (options2.push !== false && options2.from !== 'history') {
       /* lịch sử chỉ ghi ở goNext và ở nút quay lại */
+    }
+  }
+
+  /* ============================================================
+     LỚP PHỦ BƯỚC 2 VÀ BƯỚC 3
+     ============================================================ */
+
+  /* Bảng đèn kiểm duyệt đã có cột công tắc và nút phóng riêng. Lớp
+     phủ đồng hồ cũng có đúng hai thứ đó, nên khi lớp phủ gắn vào thì
+     ẩn cột bên của bảng đèn đi: hai nút phóng trên cùng một màn là
+     lỗi, người chơi không biết bấm cái nào.
+     The checklist ships its own switch column and launch button. The
+     gauge overlay has both too, so the checklist's side column is
+     hidden once the overlay mounts. Two launch buttons on one screen
+     is a bug, not a feature. */
+  const CML4_HIDE_DUPES = '.cm4-col-side, .cm4-foot';
+
+  function hideCml4Dupes(on) {
+    const root = frame.stageInner.querySelector('.cm4');
+    if (!root) return;
+    root.classList.toggle('p2-dup-hidden', !!on);
+  }
+
+  /* Modal đang mở, để lần mở sau không chồng lên lần trước. */
+  let openModal = null;
+
+  function closeModal() {
+    if (!openModal) return;
+    const cur = openModal;
+    openModal = null;
+    try {
+      if (typeof cur.close === 'function') cur.close();
+      else if (cur.root && cur.root.parentNode) cur.root.parentNode.removeChild(cur.root);
+    } catch (e) {
+      /* modal tự dọn hỏng thì thôi, không chặn bước sau */
+    }
+  }
+
+  /* Sáu nút chỉ dẫn + bảng tổng + nút NEXT cho bước lắp ráp. */
+  async function mountAssemblyOverlay(host) {
+    const mod = await loadOptional('feature-assembly-ui.js');
+    if (!mod || typeof mod.mountAssemblyUi !== 'function') {
+      /* Không có lớp phủ thì nút NEXT của cml3 vẫn dùng được. */
+      return null;
+    }
+    if (destroyed || currentStepId !== 'cml3') return null;
+
+    let handle = null;
+    try {
+      handle = mod.mountAssemblyUi({
+        container: host,
+        engine: engine,
+        onOpenGroup: (group) => {
+          /* Nhóm trajectory mở cửa sổ quỹ đạo, các nhóm còn lại mở
+             danh mục linh kiện. Đây là chỗ nối mà trước đây thiếu,
+             khiến nút "Quỹ đạo bay" bấm vào không mở gì.
+             Trajectory opens the orbit window, the rest open parts. */
+          if (group === 'trajectory') openTrajectory(handle);
+          else openParts(group);
+        },
+      });
+    } catch (e) {
+      return null;
+    }
+
+    if (!handle) return null;
+
+    /* Nút NEXT của lớp phủ chỉ mở khi mọi nhóm đã có lựa chọn, và khi
+       engine không còn mục đỏ. Bọc lại để lớp phủ không tự đổi bước
+       sau lưng app: nó phát 'ui:next', app bắt và gọi onNext.
+       The overlay's NEXT stays locked until every group is picked and
+       no engine check is red. It emits 'ui:next' and the app moves. */
+    function syncNext() {
+      if (!handle || !state) return;
+      const missing = assemblyMissing(state);
+      const red = (state.checks || []).some((c) => c.status === 'red');
+      handle.setNextEnabled(missing.length === 0 && !red);
+      handle.nextReason = missing;
+    }
+
+    const onUiNext = () => {
+      if (assemblyMissing(state).length) return;
+      goNext(stepById('cml3'));
+    };
+    window.addEventListener('ui:next', onUiNext);
+
+    const offState = engine && typeof engine.subscribe === 'function'
+      ? engine.subscribe('state:changed', () => syncNext())
+      : null;
+
+    syncNext();
+
+    /* Bọc destroy để gỡ thêm ba thứ app vừa nối. */
+    const innerDestroy = handle.destroy;
+    handle.destroy = function destroyWithHooks() {
+      window.removeEventListener('ui:next', onUiNext);
+      if (typeof offState === 'function') offState();
+      closeModal();
+      try { innerDestroy.call(handle); } catch (e) { /* lớp phủ tự dọn hỏng */ }
+    };
+
+    currentOverlay = handle;
+    return handle;
+  }
+
+  /* Bốn đồng hồ đo + công tắc + nút PHÓNG cho bước kiểm duyệt. */
+  async function mountGaugeOverlay(host) {
+    const mod = await loadOptional('feature-gauges.js');
+    if (!mod || typeof mod.mountGaugePanel !== 'function') return null;
+    if (destroyed || currentStepId !== 'cml4') return null;
+
+    let handle = null;
+    try {
+      handle = mod.mountGaugePanel({
+        container: host,
+        engine: engine,
+        onLaunch: () => {
+          /* Nút PHÓNG đã gọi engine.launchMission() xong. Bước tiếp
+             theo là bước 4, do app chuyển chứ không phải feature. */
+          if (currentStepId === 'cml4') goNext(stepById('cml4'));
+        },
+      });
+    } catch (e) {
+      return null;
+    }
+
+    if (!handle) return null;
+    currentOverlay = handle;
+    hideCml4Dupes(true);
+    /* Bọc destroy để trả lại cột bên nếu lớp phủ bị gỡ giữa chừng. */
+    const innerGaugeDestroy = handle.destroy;
+    handle.destroy = function destroyGauge() {
+      hideCml4Dupes(false);
+      try { innerGaugeDestroy.call(handle); } catch (e) { /* tự dọn hỏng */ }
+    };
+    return handle;
+  }
+
+  /* Nhóm nào còn thiếu lựa chọn. Trả mảng khoá, rỗng là đủ.
+     Which assembly groups are still unpicked. */
+  function assemblyMissing(st) {
+    const sel = (st && st.selection) || {};
+    const need = [
+      ['launcher', 'Nhóm tên lửa đẩy'],
+      ['propellant', 'Nhóm động cơ và nhiên liệu'],
+      ['power', 'Nhóm thân tàu và nguồn điện'],
+      ['comms', 'Nhóm liên lạc'],
+      ['supplies', 'Nhóm tiếp tế'],
+      ['trajectory', 'Nhóm đường bay'],
+    ];
+    return need.filter(([k]) => !sel[k]).map(([k, label]) => ({ key: k, label: label }));
+  }
+
+  /* Cửa sổ chọn linh kiện của một nhóm. */
+  async function openParts(group) {
+    const mod = await loadOptional('feature-component-modal.js');
+    if (!mod || typeof mod.openComponentModal !== 'function') {
+      showToast(lang === 'vi'
+        ? 'Chưa nạp được danh mục linh kiện.'
+        : 'The parts catalogue could not be loaded.', 'fail');
+      return;
+    }
+    if (openModal) closeModal();
+    try {
+      openModal = mod.openComponentModal({
+        group: group,
+        engine: engine,
+        onClose: () => {
+          openModal = null;
+          if (currentOverlay && typeof currentOverlay.refresh === 'function') currentOverlay.refresh();
+        },
+      });
+    } catch (e) {
+      openModal = null;
+    }
+  }
+
+  /* Cửa sổ chọn quỹ đạo bay. Tách khỏi openParts vì đây là nhóm duy
+     nhất mở bằng tệp khác: feature-trajectory.js vẽ ba hồ sơ có biểu
+     đồ, còn modal linh kiện chỉ liệt kê danh mục.
+     The orbit window is its own module, which is the whole point of
+     the separate file. */
+  async function openTrajectory(handle) {
+    const mod = await loadOptional('feature-trajectory.js');
+    if (!mod || typeof mod.openTrajectoryModal !== 'function') {
+      showToast(lang === 'vi'
+        ? 'Chưa nạp được cửa sổ quỹ đạo bay.'
+        : 'The orbit window could not be loaded.', 'fail');
+      return;
+    }
+    if (openModal) closeModal();
+    try {
+      openModal = mod.openTrajectoryModal({
+        engine: engine,
+        onClose: () => {
+          openModal = null;
+          if (handle && typeof handle.refresh === 'function') handle.refresh();
+        },
+      });
+    } catch (e) {
+      openModal = null;
     }
   }
 
@@ -1368,6 +1630,64 @@ export async function mountPhase2(options) {
     frame.stage.classList.add('has-feature');
     paintStatus();
     frame.btnPrev.disabled = history.length === 0;
+
+    /* Trước khi hiện bảng tổng kết của app, chiếu phân cảnh kết thúc
+       thành công (9 khung) nếu module có mặt. Bảng tổng kết chi tiết
+       của true-ending.js được dùng thay cho bản đơn giản bên dưới:
+       nó có xếp hạng, đối chiếu với tàu thật và hai nút thoát.
+       Nạp mềm: thiếu module hay lỗi bất ngờ thì rơi về bản cũ, không
+       bao giờ để trống màn hình. */
+    if (!summaryViaTrueEnding) {
+      summaryViaTrueEnding = true;
+      const goPlain = () => {
+        frame.stageInner.appendChild(buildSummary(state));
+        frame.actionsInner.appendChild(buildHint());
+        const again = el('button', 'p2-btn p2-btn-primary');
+        again.type = 'button';
+        again.appendChild(el('span', 'p2-btn-text', t('sum.again')));
+        again.addEventListener('click', () => {
+          history = [];
+          if (typeof engine.setCmlStep === 'function') {
+            try { engine.setCmlStep('cml1'); } catch (e) { /* engine tự lo */ }
+          }
+          showStep('cml1');
+        });
+        frame.navRight.appendChild(again);
+      };
+      const base = new URL('.', import.meta.url).href;
+      import(base + '../true-ending.js')
+        .then((mod) => {
+          if (!mod || typeof mod.openTrueEnding !== 'function') {
+            console.warn('[phase2] chưa có màn kết thúc, dùng bảng tổng kết đơn giản');
+            goPlain();
+            return;
+          }
+          mod.openTrueEnding({
+            stats: null,
+            engine,
+            onRestart: () => {
+              history = [];
+              if (typeof engine.setCmlStep === 'function') {
+                try { engine.setCmlStep('cml1'); } catch (e) { /* engine tự lo */ }
+              }
+              showStep('cml1');
+            },
+            onExit: () => {
+              try {
+                const ev = new CustomEvent('phase2:exit', { bubbles: true });
+                document.dispatchEvent(ev);
+              } catch (e) { /* không dựng được sự kiện thì thôi */ }
+              window.location.reload();
+            },
+          });
+        })
+        .catch((err) => {
+          console.warn('[phase2] màn kết thúc lỗi, dùng bảng tổng kết đơn giản', err);
+          goPlain();
+        });
+      return;
+    }
+
     frame.stageInner.appendChild(buildSummary(state));
     frame.actionsInner.appendChild(buildHint());
 
@@ -1542,6 +1862,7 @@ export async function mountPhase2(options) {
     setLang: setLang,
     getLang: () => lang,
     destroy() {
+      destroyed = true;
       destroyCurrent();
       unsubscribers.forEach((fn) => { try { fn(); } catch (e) { /* bỏ qua */ } });
       unsubscribers = [];

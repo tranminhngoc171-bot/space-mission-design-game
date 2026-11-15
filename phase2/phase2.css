@@ -1212,6 +1212,33 @@
   animation: p2-fade-up var(--st-dur-slow) var(--p2-ease) both;
 }
 
+/* ---------- lớp phủ bước 3: bảng đèn và bảng đồng hồ ----------
+   Bảng đèn kiểm duyệt và bảng đồng hồ cùng có công tắc và nút phóng.
+   Khi lớp phủ đồng hồ gắn vào, app gắn lớp p2-dup-hidden lên bảng đèn
+   để ẩn phần trùng. Nền của hai bảng cũng phải trong suốt: cả hai đều
+   đang đặt nền đặc, phủ lên ảnh nền sân khấu, nên màn chỉ còn một
+   khối đen đặc.
+   The review lightboard and the gauge panel both carry the switches
+   and the launch button. The app flags the lightboard so the duplicate
+   column and footer disappear. Both panels also paint an opaque
+   background over the stage artwork, which is why the screen read as
+   a flat black block. */
+.cm4.p2-dup-hidden .cm4-col-side,
+.cm4.p2-dup-hidden .cm4-foot {
+  display: none;
+}
+
+.cm4.p2-dup-hidden {
+  background: transparent;
+  border-color: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.cm4.p2-dup-hidden > .cm4-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 html.motion-off .p2-stat.is-scanning .p2-dot,
 html.motion-off .p2-wait::after,
 html.motion-off .p2-stage-inner > .p2-step-host {
