@@ -34,7 +34,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'src' / 'assets' / 'gen'
@@ -53,22 +53,6 @@ def load_mask():
     x0, y0, _ = MASK_BOX.read_text().split()
     return mask, int(x0), int(y0)
 
-
-def star_stats(im, mask, mx, my):
-    """Thong ke vanh quanh ngoi sao, bo chinh vung sao.
-
-    Vanh elip 1.05 < e < 1.9 quanh tam (0.930, 0.868). p90 la chi so quyet
-    dinh: le den tron co p90 gan 0, nen co net ve thi p90 vot len xa.
-    """
-    w, h = im.size
-    cx, cy = int(w * WM_X), int(h * WM_Y)
-    rx, ry = int(w * 0.040), int(h * 0.052)
-    a = np.asarray(im.convert('RGB')).astype(np.float32)
-    yy, xx = np.mgrid[0:h, 0:w]
-    e = ((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2
-    band = (e > 1.05) & (e < 1.9)
-    v = a[band]
-    return float(np.median(v)), float(np.percentile(v, 90))
 
 
 def diffuse(im, mask, mx, my, iterations=1400):
@@ -100,8 +84,12 @@ def diffuse(im, mask, mx, my, iterations=1400):
     return out
 
 
-def clone(im, mask, mx, my, tries=60):
-    """Nhan ban ket cau tu vung lan can, dan vao theo mat na hinh sao."""
+def clone(im, mask, mx, my, tries=60, feather=4.0):
+    """Nhan ban ket cau tu vung lan can, dan vao theo mat na hinh sao.
+
+    feather la do mo cua mat na khi dan: mo nhieu thi mep khong hien
+    duong cat (dung cho nen co net but), mo it thi giu net sac (nen den).
+    """
     w, h = im.size
     S = mask.shape[0]
     a = np.asarray(im.convert('RGB')).astype(np.float32)
@@ -132,7 +120,15 @@ def clone(im, mask, mx, my, tries=60):
 
     sx0, sy0 = best
     src = np.asarray(im.crop((sx0, sy0, sx0 + S, sy0 + S)).convert('RGB')).astype(np.float32)
-    alpha = mask[..., None]
+    # Mat na khi dan: gian ra truoc roi moi lam mo. Chi lam mo mot mat na
+    # vua khi thi phan canh sao sat mep chi duoc phu mot nua va con nhin
+    # thay; gian 3px roi moi mo 4px thi loi van dac va mep van mem.
+    binm = (mask > 0.30).astype(np.uint8) * 255
+    soft = Image.fromarray(binm)
+    if feather > 0:
+        soft = soft.filter(ImageFilter.MaxFilter(7))
+        soft = soft.filter(ImageFilter.GaussianBlur(feather))
+    alpha = np.asarray(soft).astype(np.float32)[..., None] / 255.0
 
     a = a.copy()
     a[my:my + S, mx:mx + S] = (
@@ -140,6 +136,36 @@ def clone(im, mask, mx, my, tries=60):
     )
     out = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
     return out, best_score
+
+
+
+def residual_score(im, mask, mx, my):
+    """Do xem con sao hay khong: chenh sang cua hinh sao so voi nen cuc bo.
+
+    Ngoi sao la lop phu co hinh dang co dinh (mat na tu _wm_mask.py). Neu
+    con sao thi cac diem trong hinh sao sang hon han vung trong quanh no.
+    Dung trung vi cuc bo lam nen nen phep do khong phu thuoc do sang chung
+    cua buc tranh.
+    """
+    w, h = im.size
+    S = mask.shape[0]
+    pad = 20
+    x0, y0 = max(0, mx - pad), max(0, my - pad)
+    x1, y1 = min(w, mx + S + pad), min(h, my + S + pad)
+
+    crop = im.crop((x0, y0, x1, y1)).convert('L')
+    lum = np.asarray(crop).astype(np.float32)
+    bg = np.asarray(crop.filter(ImageFilter.MedianFilter(31))).astype(np.float32)
+    d = lum - bg
+
+    cw, ch = x1 - x0, y1 - y0
+    m = np.zeros((ch, cw), np.float32)
+    m[my - y0:my - y0 + S, mx - x0:mx - x0 + S] = mask
+
+    on, off = m > 0.55, m < 0.02
+    if on.sum() < 20 or off.sum() < 20:
+        return float('nan')
+    return abs(float(d[on].mean() - d[off].mean()))
 
 
 def main():
@@ -162,18 +188,27 @@ def main():
 
     for p in targets:
         im = Image.open(p).convert('RGB')
-        med, p90 = star_stats(im, mask, mx, my)
-        flat = p90 < 12.0
-        method = force or ('diffuse' if flat else 'clone')
-        if method == 'diffuse':
-            out = diffuse(im, mask, mx, my)
-            note = f'le den tron (med {med:5.1f} p90 {p90:5.1f}) -> lan truyen mau'
-        else:
-            out, score = clone(im, mask, mx, my)
-            note = f'co net ve (med {med:5.1f} p90 {p90:5.1f}) -> nhan ban, lech {score:4.1f}'
+        before = residual_score(im, mask, mx, my)
+
+        # Thu hai phep che roi chon cai de lai it dau vet sao nhat. Khong
+        # doan theo loai nen: true-ending-01 nam tren troi sao (nen khong
+        # phang nhung cung khong co net but) va chi lan truyen moi sach,
+        # trong khi 04 nam tren mang giap co net va chi nhan ban moi giu
+        # duoc net. Chon bang so lieu thi khong phai doan.
+        cands = []
+        if force in (None, 'diffuse'):
+            cands.append(('lan truyen', diffuse(im, mask, mx, my)))
+        if force in (None, 'clone'):
+            cands.append(('nhan ban', clone(im, mask, mx, my)[0]))
+
+        scored = [(residual_score(o, mask, mx, my), name, o) for name, o in cands]
+        scored.sort(key=lambda t: t[0])
+        after, name, out = scored[0]
 
         out.save(DST / p.name)
-        print(f'{p.stem:16} {im.size[0]}x{im.size[1]}  {note}')
+        detail = ', '.join(f'{n} {s:.1f}' for s, n, _ in scored)
+        print(f'{p.stem:16} {im.size[0]}x{im.size[1]}  '
+              f'truoc {before:5.1f} -> sau {after:4.1f}  dung: {name}  [{detail}]')
 
     return 0
 
