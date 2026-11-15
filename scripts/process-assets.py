@@ -748,6 +748,36 @@ def process_ending(path):
     return out, im.size
 
 
+def process_beacon(path):
+    """Khung trạm nhận tín hiệu: cắt về 16:9, xuất WebP vào art/beacon/.
+
+    beacon.js trỏ thẳng vào assets/art/beacon/beacon-NN.webp, nên ảnh phải
+    nằm trong thư mục con beacon/ chứ không nằm cạnh các ảnh nền khác.
+    Xử lý giống process_scene (dò và cắt watermark, cắt tâm về 16:9,
+    WebP 82) vì cùng là tranh 16:9 chịu được cắt mép.
+    """
+    im = Image.open(path).convert('RGB')
+    im = trim_watermark(im)
+
+    w, h = im.size
+    target = SCENE_W / SCENE_H
+    if w / h > target:
+        new_w = int(h * target)
+        left = (w - new_w) // 2
+        im = im.crop((left, 0, left + new_w, h))
+    else:
+        new_h = int(w / target)
+        top = (h - new_h) // 2
+        im = im.crop((0, top, w, top + new_h))
+
+    im = im.resize((SCENE_W, SCENE_H), Image.LANCZOS)
+    beacon_out = OUT / 'beacon'
+    beacon_out.mkdir(parents=True, exist_ok=True)
+    out = beacon_out / path.name.replace('.png', '.webp')
+    im.save(out, 'WEBP', quality=PANEL_QUALITY, method=6)
+    return out, im.size
+
+
 def main():
     if not SRC.is_dir():
         print(f'Không thấy thư mục ảnh gốc: {SRC}')
@@ -795,6 +825,10 @@ def main():
     # nên chỉ cần một danh sách riêng, không sợ bị xử lý hai lần.
     all_p2 = sorted(SRC.glob('p2-*.png')) if SRC.is_dir() else []
     p2scenes = all_p2 if args.only in (None, 'p2') else []
+    # Khung trạm nhận tín hiệu: tiền tố beacon- tách hẳn khỏi mọi glob khác,
+    # nên chỉ cần một danh sách riêng. Xuất vào OUT/beacon/ chứ không OUT/.
+    all_beacons = sorted(SRC.glob('beacon-*.png')) if SRC.is_dir() else []
+    beacons = all_beacons if args.only in (None, 'scenes') else []
 
     print(f'Xử lý {len(scenes)} ảnh nền, {len(icons)} icon, {len(panels)} khung truyện, '
           f'{len(chars)} sprite nhân vật, {len(iconsprites)} icon sprite, {len(popups)} tranh popup, '
@@ -839,6 +873,12 @@ def main():
         out, size = process_p2scene(p)
         total_after += out.stat().st_size
         print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
+
+    for p in beacons:
+        total_before += p.stat().st_size
+        out, size = process_beacon(p)
+        total_after += out.stat().st_size
+        print(f'  beacon/{out.name:18} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
 
     for p in chars:
         total_before += p.stat().st_size
