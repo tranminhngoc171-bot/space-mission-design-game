@@ -60,6 +60,8 @@ Từ 4 nút lên 6: **Nông trại · Túi đồ · Đi thám hiểm · Bàn ch�
 
 **11. i18n lệch bảng, chữ tiếng Anh lọt vào bảng tiếng Việt.** Khi thêm chuỗi mới, khối EN bị chèn vào bảng VI, nên giao diện Việt hiện "Sleep"/"Not yet". Phát hiện bằng script đếm key trùng: VI có 108 key nhưng 9 cặp trùng. Sửa: VI và EN giờ khớp **127/127 key, không trùng cặp nào**.
 
+**12. Hai lớp phủ chồng lên nhau.** Mở túi đồ rồi bấm Bàn chế tạo, túi vẫn còn dưới nên nhìn như màn hình bị kẹt. Túi đồ là lớp riêng, không nằm trong `childScreen` nên không tự đóng. Sửa: bốn màn con (nông trại, thám hiểm, chế tạo, radio) đều đóng túi trước khi mở, và mở túi thì đóng màn con.
+
 ---
 
 ## 4. Bố cục: 9 trên 9 kích thước vừa một khung
