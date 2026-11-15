@@ -24,6 +24,9 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'src' / 'assets' / 'gen'
 OUT = ROOT / 'src' / 'assets' / 'art'
+# Lớp nền Giai đoạn 2 ghi riêng vào phase2/assets/: CSS của Phase 2 nằm
+# trong phase2/ và trỏ ảnh bằng ../assets/, nên ảnh phải nằm đúng đó.
+P2_OUT = ROOT / 'phase2' / 'assets'
 
 # Ảnh nền: 16:9, không cần trong suốt
 SCENE_W, SCENE_H = 1600, 900
@@ -388,32 +391,50 @@ def matte_background(im, keep_ratio=0.10):
             if n <= max(64, int(h * w * 0.004)):
                 alpha[ys, xs] = 1.0
 
-    # Khử màu nền còn sót ở rìa và trong lỗ: pixel có alpha nhưng màu vẫn
-    # gần màu xám nền sẽ hiện thành viền xám khi đặt lên panel tối. Lan màu
-    # của pixel vật thể thật vào các pixel đó vài vòng.
-    edge = (alpha > 0.05) & (dist < 45)
+    # Khử màu nền còn sót ở rìa: GỠ TRỘN (unpremultiply) chứ không chỉ lan
+    # màu từ pixel bên cạnh. Công thức trộn của khử răng cưa là
+    #     C_nhìn_thấy = a * F + (1 - a) * B
+    # nên màu vật thật F suy ra được từ màu đã đo và màu nền B. Bản trước chỉ
+    # lan màu vào những pixel có dist < 45 và chạy 10 vòng, nên các pixel có
+    # alpha nhỡ vẫn giữ nguyên màu nền đã trộn sẵn — đo trên sprite mới thấy
+    # 26 tới 50 phần trăm số pixel nửa trong suốt vẫn nằm sát màu nền xanh lơ.
+    # Đặt sprite lên panel tối của game là hiện viền xanh nhạt quanh người.
+    #
+    # Chia cho alpha ở đây khuếch đại nhiễu, nên chỉ gỡ trộn khi alpha đủ lớn
+    # (>= 0.20, tức là phần lớn màu đến từ vật). Phần alpha thấp hơn thì lan
+    # màu từ các pixel đã gỡ trộn ra, vì ở đó phép chia vô nghĩa.
+    a3 = alpha[..., None]
+    edge = (alpha > 0.02) & (alpha < 0.995)
     if edge.any():
-        known = (alpha > 0.05) & ~edge
-        col = rgb.copy()
-        for _ in range(10):
-            if not edge.any():
+        safe = np.maximum(alpha, 0.20)[..., None]
+        unmixed = np.clip((rgb - (1.0 - a3) * bg) / safe, 0.0, 255.0)
+        strong = edge & (alpha >= 0.20)
+        rgb[strong] = unmixed[strong]
+
+        # Phần đuôi alpha thấp: lan màu từ vật thể đã gỡ trộn vào. Nguồn lan
+        # chỉ được là pixel ĐỤC hoặc pixel vừa gỡ trộn — tuyệt đối không lấy
+        # pixel trong suốt hoàn toàn, vì chúng vẫn giữ nguyên màu nền và sẽ
+        # bơm lại đúng cái viền xanh vừa gỡ ra.
+        todo = edge & ~strong
+        known = (alpha >= 0.995) | strong
+        for _ in range(14):
+            if not todo.any():
                 break
-            acc = np.zeros_like(col)
+            acc = np.zeros_like(rgb)
             cnt = np.zeros((h, w), np.float32)
             for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
                 ys = slice(max(0, dy), h + min(0, dy))
                 xs_ = slice(max(0, dx), w + min(0, dx))
                 ys2 = slice(max(0, -dy), h + min(0, -dy))
                 xs2 = slice(max(0, -dx), w + min(0, -dx))
-                acc[ys, xs_] += col[ys2, xs2] * known[ys2, xs2][..., None]
+                acc[ys, xs_] += rgb[ys2, xs2] * known[ys2, xs2][..., None]
                 cnt[ys, xs_] += known[ys2, xs2]
-            fill = edge & (cnt > 0)
+            fill = todo & (cnt > 0)
             if not fill.any():
                 break
-            col[fill] = acc[fill] / cnt[fill][:, None]
+            rgb[fill] = acc[fill] / cnt[fill][:, None]
             known = known | fill
-            edge = edge & ~fill
-        rgb = col
+            todo = todo & ~fill
 
     arr = np.dstack([rgb, alpha * 255.0]).astype(np.uint8)
     res = Image.fromarray(arr, 'RGBA')
@@ -436,15 +457,42 @@ def process_char(path):
     Chiều cao đích lấy theo tên file (CHAR_H_PER), không dùng một con số cho
     cả ba: tư thế ngồi bó gối thấp hơn hẳn tư thế đứng, ép cùng chiều cao
     là biến người ngồi thành người khổng lồ khi đặt cạnh nhau.
+
+    KHÔNG gọi trim_watermark ở đây. Đó chính là lỗi làm mất chân: hàm đó dò
+    "cụm pixel sáng, ít bão hoà ở góc dưới phải" để tìm watermark, nhưng
+    trên sprite nhân vật thì thân người sáng nằm giữa khung còn đáy ảnh là
+    nền phẳng, nên nó bắt nhầm cả vùng nền + đùi làm watermark và cắt thẳng
+    14 phần trăm chiều cao (đo thật: 107px trên ảnh 768px) — đúng bằng đoạn
+    từ đầu gối xuống, tức là cắt mất bắp chân và cả hai bàn chân. Ảnh gốc
+    vẫn có giày đầy đủ; lỗi nằm ở bước hậu kỳ chứ không phải ở prompt.
+
+    Ngôi sao watermark thật thì nhỏ (cỡ 50px) và nằm lẻ ở góc, nên bộ lọc
+    thành phần liên thông trong matte_background (bỏ mọi mảnh dưới 10 phần
+    trăm mảnh lớn nhất) đã dọn sạch nó mà không đụng tới thân người.
     """
     im = Image.open(path)
-    rgba = trim_watermark(matte_background(im))
-    # trim_watermark cắt mép phải/đáy; trên ảnh RGBA thì nó vẫn chạy được vì
-    # find_watermark tự convert sang RGB. Cắt xong mới dò khung bao.
+    rgba = matte_background(im)
 
     box = alpha_bbox(rgba)
     if not box:
         raise RuntimeError(f'{path.stem}: tách nền ra rỗng')
+
+    # Chốt chặn: silhouette chạm mép ảnh gốc nghĩa là model vẽ tràn khung và
+    # nhân vật đã bị cắt cụt (mất chân hoặc mất đầu). Thà hỏng to tiếng còn
+    # hơn ship một sprite cụt chân mà không ai biết.
+    x0, y0, x1, y1 = box
+    src_w, src_h = rgba.size
+    if y1 >= src_h - 1:
+        raise RuntimeError(
+            f'{path.stem}: nhân vật chạm mép đáy ảnh gốc (y1={y1}/{src_h}) '
+            f'— chân đã bị cắt, phải sinh lại với khung cao hơn'
+        )
+    if y0 <= 0:
+        raise RuntimeError(
+            f'{path.stem}: nhân vật chạm mép đỉnh ảnh gốc (y0={y0}) '
+            f'— đầu đã bị cắt, phải sinh lại với khung cao hơn'
+        )
+
     rgba = rgba.crop(box)
 
     # Đệm 2px trong suốt đều bốn phía: khung bao vừa khít silhouette thì
@@ -612,6 +660,90 @@ def process_panel(path):
     return out, im.size
 
 
+def process_p2scene(path):
+    """Lớp nền Giai đoạn 2: che watermark, cắt về 16:9, xuất WebP vào phase2/assets/.
+
+    Vì sao ghi thẳng sang phase2/assets/ chứ không vào src/assets/art/:
+    Phase 2 là một trang riêng, CSS của nó nằm trong phase2/ và tham chiếu
+    ảnh bằng đường dẫn tương đối ../assets/. Đặt ảnh đúng chỗ CSS trỏ tới
+    thì không phải sửa đường dẫn nào và cũng không phải chép tay.
+
+    Không dùng trim_watermark: ảnh nền phòng điều khiển và xưởng lắp ráp có
+    dải tối ở đáy khung, trim_watermark nhận nhầm dải đó là watermark rồi
+    cắt mất sàn, làm bố cục lệch. Thay vào đó che tại chỗ bằng nhân bản
+    kết cấu lân cận, cùng thủ pháp scripts/_wm_clone.py dùng cho ending.
+
+    Che TRƯỚC khi cắt và phóng: ngôi sao nằm ở 93% / 86,8% khung gốc, cắt
+    16:9 quanh tâm sẽ đổi mất toạ độ tương đối của nó.
+
+    Cách che là CẮT HẲN 10 phần trăm mép phải, không phải nhân bản kết cấu.
+    Đã thử nhân bản và cả trung vị sáu mảng lân cận: ngôi sao nằm đè lên
+    chi tiết (ghế, bảng điều khiển, màn hình) nên mọi kiểu vá đều để lại
+    một vệt nhoè nhìn thấy. Cắt mép sạch tuyệt đối, và vì ảnh được phóng
+    lại về 1600x900 từ 1238px nên không mất chi tiết nào đáng kể.
+    """
+    clean = ROOT / 'src' / 'assets' / 'gen-clean' / path.name
+    src = clean if clean.exists() else path
+    im = Image.open(src).convert('RGB')
+
+    # bỏ dải mép phải chứa watermark (ngôi sao ở 93% chiều rộng)
+    w0, h0 = im.size
+    im = im.crop((0, 0, int(w0 * 0.90), h0))
+
+    w, h = im.size
+    target = SCENE_W / SCENE_H
+    if w / h > target:
+        new_w = int(h * target)
+        left = (w - new_w) // 2
+        im = im.crop((left, 0, left + new_w, h))
+    else:
+        new_h = int(w / target)
+        top = (h - new_h) // 2
+        im = im.crop((0, top, w, top + new_h))
+
+    im = im.resize((SCENE_W, SCENE_H), Image.LANCZOS)
+    P2_OUT.mkdir(parents=True, exist_ok=True)
+    out = P2_OUT / path.name.replace('.png', '.webp')
+    im.save(out, 'WEBP', quality=SCENE_QUALITY, method=6)
+    return out, im.size
+
+
+def process_ending(path):
+    """Tranh màn kết thúc thua: cắt về 16:9, xuất WebP.
+
+    KHÔNG dùng trim_watermark. Hàm đó dò dải watermark bán trong suốt rồi
+    cắt bỏ một dải mép ảnh; với ảnh ending, dải tối ở đáy tranh (bóng đổ,
+    sàn khoang) bị nhận nhầm là watermark và bị cắt mất, làm mất chân
+    nhân vật hoặc bóp méo bố cục.
+
+    Ảnh gốc lấy từ gen-clean/ nếu có: scripts/_wm_clone.py đã che ngôi
+    sao của API bằng cách nhân bản kết cấu lân cận, nên ở đây không phải
+    làm gì thêm với watermark.
+
+    Cũng không dùng fill_letterbox: tranh ending do model sinh đúng khung
+    ngang, không có dải đen hai bên.
+    """
+    clean = ROOT / 'src' / 'assets' / 'gen-clean' / path.name
+    src = clean if clean.exists() else path
+    im = Image.open(src).convert('RGB')
+
+    w, h = im.size
+    target = SCENE_W / SCENE_H
+    if w / h > target:
+        new_w = int(h * target)
+        left = (w - new_w) // 2
+        im = im.crop((left, 0, left + new_w, h))
+    else:
+        new_h = int(w / target)
+        top = (h - new_h) // 2
+        im = im.crop((0, top, w, top + new_h))
+
+    im = im.resize((SCENE_W, SCENE_H), Image.LANCZOS)
+    out = OUT / path.name.replace('.png', '.webp')
+    im.save(out, 'WEBP', quality=PANEL_QUALITY, method=6)
+    return out, im.size
+
+
 def main():
     if not SRC.is_dir():
         print(f'Không thấy thư mục ảnh gốc: {SRC}')
@@ -620,14 +752,16 @@ def main():
 
     ap = argparse.ArgumentParser(description='Chuẩn hoá ảnh sinh ra từ model')
     ap.add_argument(
-        '--only', choices=['scenes', 'icons', 'panels', 'chars', 'iconsprite'],
-        help='chỉ xử lý một nhóm, mặc định xử lý cả năm',
+        '--only', choices=['scenes', 'icons', 'panels', 'chars', 'iconsprite', 'endings', 'p2'],
+        help='chỉ xử lý một nhóm, mặc định xử lý cả bảy',
     )
     args = ap.parse_args()
 
     OUT.mkdir(parents=True, exist_ok=True)
 
-    all_scenes = sorted(SRC.glob('bg-*.png'))
+    # Ảnh cảnh gồm hai họ tên: bg- (cảnh nền) và mem- (ảnh kỷ vật mở
+    # trong túi đồ). Trước đây chỉ quét bg- nên ảnh kỷ vật bị bỏ sót.
+    all_scenes = sorted(SRC.glob('bg-*.png')) + sorted(SRC.glob('mem-*.png'))
     all_icons = sorted(SRC.glob('icon-*.png'))
     all_panels = sorted(SRC.glob('screen-*.png'))
     # Sprite nằm ở thư mục riêng, xem SPRITE_SRC. Ảnh popup-* cũng ở đó vì
@@ -646,9 +780,19 @@ def main():
     # Không lọc theo --only panels: popup là bộ art màn căn cứ, chạy riêng
     # sẽ dễ quên. Chỉ bỏ qua khi người dùng đã chỉ định nhóm khác.
     popups = all_popups if args.only in (None, 'panels') else []
+    # Tranh ending nằm chung gen/ nhưng KHÔNG được lọt vào vòng quét bg-*,
+    # screen-* hay popup-* ở trên. Tiền tố ending_ đứng ngoài mọi glob đó,
+    # nên chỉ cần thêm danh sách riêng.
+    all_endings = sorted(SRC.glob('ending_*.png')) if SRC.is_dir() else []
+    endings = all_endings if args.only in (None, 'endings') else []
+    # Lớp nền Giai đoạn 2: tiền tố p2- tách hẳn khỏi mọi glob khác ở trên,
+    # nên chỉ cần một danh sách riêng, không sợ bị xử lý hai lần.
+    all_p2 = sorted(SRC.glob('p2-*.png')) if SRC.is_dir() else []
+    p2scenes = all_p2 if args.only in (None, 'p2') else []
 
     print(f'Xử lý {len(scenes)} ảnh nền, {len(icons)} icon, {len(panels)} khung truyện, '
-          f'{len(chars)} sprite nhân vật, {len(iconsprites)} icon sprite, {len(popups)} tranh popup')
+          f'{len(chars)} sprite nhân vật, {len(iconsprites)} icon sprite, {len(popups)} tranh popup, '
+          f'{len(p2scenes)} nền Giai đoạn 2')
     print('')
 
     total_before = 0
@@ -678,6 +822,18 @@ def main():
         total_after += out.stat().st_size
         print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
 
+    for p in endings:
+        total_before += p.stat().st_size
+        out, size = process_ending(p)
+        total_after += out.stat().st_size
+        print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
+
+    for p in p2scenes:
+        total_before += p.stat().st_size
+        out, size = process_p2scene(p)
+        total_after += out.stat().st_size
+        print(f'  {out.name:24} {size[0]}x{size[1]}  {out.stat().st_size // 1024} KB')
+
     for p in chars:
         total_before += p.stat().st_size
         out, size = process_char(p)
@@ -702,6 +858,7 @@ def main():
         'panels': [],
         'chars': [],
         'popups': [],
+        'endings': [],
     }
 
     # Icon do gen-icon-sprite.py ghi vào manifest có thêm cờ 'transparent' và
@@ -751,6 +908,21 @@ def main():
         manifest['panels'].append(entry(p, SCENE_W, SCENE_H))
     for p in sorted(OUT.glob('popup-*.webp')):
         manifest['popups'].append(entry(p, SCENE_W, SCENE_H))
+    # Tranh ending: giữ đúng thứ tự tám cảnh đã định nghĩa, không theo
+    # bảng chữ cái, để manifest đọc như một dải kết thúc có trình tự.
+    ENDING_ORDER = [
+        'ending_hypoxia', 'ending_dehydration', 'ending_starvation',
+        'ending_blackout', 'ending_orbit_miss', 'ending_mutiny',
+        'ending_comms_lost', 'ending_edl_crash',
+    ]
+    found_endings = {p.stem: p for p in OUT.glob('ending_*.webp')}
+    for stem in ENDING_ORDER + sorted(set(found_endings) - set(ENDING_ORDER)):
+        p = found_endings.get(stem)
+        if not p:
+            continue
+        with Image.open(p) as im:
+            w, h = im.size
+        manifest['endings'].append(entry(p, w, h))
     for p in sorted(OUT.glob('char-*.webp')):
         with Image.open(p) as im:
             w, h = im.size

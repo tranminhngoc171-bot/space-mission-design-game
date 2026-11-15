@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TẠM · test feature-component-modal</title>
+<link rel="stylesheet" href="../src/css/tokens.css">
+<style>
+  html, body { margin:0; padding:0; background:#07090d; color:#b9c7d6;
+    font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif; }
+  #logs { padding:12px; font-family:Consolas,monospace; font-size:12px; white-space:pre-wrap; }
+  #logs b { color:#e8a33d; }
+</style>
+</head>
+<body>
+<script type="module">
+  const BASE = new URL('.', import.meta.url).href;
+  const engMod = await import(BASE + 'phase2-engine.js');
+  const engine = engMod.phase2Engine;
+  engine.initFromPhase1({ solsRemaining: 300, crewOnMars: 1, signalStrength: 0.8 });
+  engine.setCmlStep('cml3');
+  const mod = await import(BASE + 'feature-component-modal.js');
+  window.openComponentModal = mod.openComponentModal;
+  window.engine = engine;
+  window.READY = true;
+  const errs = [];
+  window.CONSOLE_ERRORS = errs;
+  window.addEventListener('error', (e) => errs.push('error: ' + e.message));
+  window.addEventListener('unhandledrejection', (e) => errs.push('reject: ' + e.reason));
+  document.body.innerHTML = '<div id="logs">SAN SÀNG</div>';
+</script>
+</body>
+</html>
