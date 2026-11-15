@@ -94,7 +94,10 @@ def clone(im, mask, mx, my, tries=60, feather=4.0):
     S = mask.shape[0]
     a = np.asarray(im.convert('RGB')).astype(np.float32)
 
-    # Vanh tham chieu: vung quanh cua so sao, bo chinh cua so.
+    # Vanh tham chieu: vung quanh cua so sao, bo chinh cua so. Do lech
+    # chuan cua vanh nay (khong phai cua ca buc tranh) moi la cai quyet
+    # dinh: mang giap co the toi o cho nay va sang o cho khac, nen histogram
+    # toan anh chon ra nguon sai. Do lech cua vanh cuc bo moi dung.
     pad = 55
     ry0, ry1 = max(0, my - pad), min(h, my + S + pad)
     rx0, rx1 = max(0, mx - pad), min(w, mx + S + pad)
@@ -104,25 +107,10 @@ def clone(im, mask, mx, my, tries=60, feather=4.0):
     ring_v = ring[~hole]
     rmean, rstd = ring_v.mean(), ring_v.std()
 
-    best, best_score = None, 1e18
-    for i in range(tries):
-        ang = 2 * math.pi * i / tries
-        dist = 2.2
-        dx = int(-math.cos(ang) * dist * S)
-        dy = int(-math.sin(ang) * dist * S)
-        sx0 = min(max(0, mx + dx), w - S)
-        sy0 = min(max(0, my + dy), h - S)
-        patch = a[sy0:sy0 + S, sx0:sx0 + S]
-        score = abs(patch.mean() - rmean) + 0.9 * abs(patch.std() - rstd)
-        if score < best_score:
-            best_score = score
-            best = (sx0, sy0)
-
-    sx0, sy0 = best
-    src = np.asarray(im.crop((sx0, sy0, sx0 + S, sy0 + S)).convert('RGB')).astype(np.float32)
-    # Mat na khi dan: gian ra truoc roi moi lam mo. Chi lam mo mot mat na
-    # vua khi thi phan canh sao sat mep chi duoc phu mot nua va con nhin
-    # thay; gian 3px roi moi mo 4px thi loi van dac va mep van mem.
+    # Thu tung nguon ung vien va cham diem bang CHINH phep do con sao
+    # (residual_score), khong dung histogram: histogram cua ca mang khong
+    # noi len duoc mang nguon co lot dung cho trong hay khong. Lay nguon nao
+    # cho ra ket qua it dau vet sao nhat.
     binm = (mask > 0.30).astype(np.uint8) * 255
     soft = Image.fromarray(binm)
     if feather > 0:
@@ -130,12 +118,32 @@ def clone(im, mask, mx, my, tries=60, feather=4.0):
         soft = soft.filter(ImageFilter.GaussianBlur(feather))
     alpha = np.asarray(soft).astype(np.float32)[..., None] / 255.0
 
-    a = a.copy()
-    a[my:my + S, mx:mx + S] = (
-        a[my:my + S, mx:mx + S] * (1 - alpha) + src * alpha
-    )
-    out = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
-    return out, best_score
+    base = np.asarray(im.convert('RGB')).astype(np.float32)
+    best, best_out, best_score = None, None, 1e18
+    for i in range(tries):
+        ang = 2 * math.pi * i / tries
+        dist = 2.2
+        dx = int(-math.cos(ang) * dist * S)
+        dy = int(-math.sin(ang) * dist * S)
+        sx0 = min(max(0, mx + dx), w - S)
+        sy0 = min(max(0, my + dy), h - S)
+        src = a[sy0:sy0 + S, sx0:sx0 + S]
+
+        out = base.copy()
+        out[my:my + S, mx:mx + S] = (
+            out[my:my + S, mx:mx + S] * (1 - alpha) + src * alpha
+        )
+        cand = Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
+
+        score = residual_score(cand, mask, mx, my)
+        # Chi giu ban tot nhat; nguon tot thi khong can duyet het neu da
+        # xuong duoi muc nhin thay duoc.
+        if score < best_score:
+            best_score, best_out, best = score, cand, (sx0, sy0)
+        if best_score < 0.6:
+            break
+
+    return best_out, best_score
 
 
 

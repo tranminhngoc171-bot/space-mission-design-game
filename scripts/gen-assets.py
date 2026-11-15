@@ -1580,6 +1580,84 @@ ASSETS = {
         'size': '1600x900',
     },
 
+    'true-ending-06': {
+        'prompt': (
+            'one single full frame image, no panels, no gutters, 16:9 '
+            'composition, wide shot inside a large Earth mission control '
+            'room at night, '
+            'a huge projection screen fills the centre upper half of the '
+            'frame and on that screen is displayed the same emotional '
+            'group hug of four people in white EVA suits on a red plain, '
+            'shrunk to fit the screen, the screen image slightly soft and '
+            'glowing because it is a live feed, '
+            'below the screen tiered rows of consoles step down toward it '
+            'with banks of small cyan monitors, '
+            'two dozen engineers and flight controllers in shirtsleeves and '
+            'dark ties have all risen to their feet, clapping and cheering '
+            'and raising their arms, faces turned up toward the screen, '
+            'warm amber desk lamps mixing with cold cyan screen light, '
+            'the dark far wall behind the screen is plain bare panelling '
+            'with no emblem and no lettering of any kind, '
+            'all clothing is plain and unmarked, no badge and no patch '
+            'on any shirt'
+        ),
+        'note': 'true ending 06: phòng điều khiển Trái Đất reo mừng',
+        'kind': 'ending',
+        'style': TRUE_ENDING_STYLE + ', warm amber and cold cyan light '
+                 'mixing, faces turned up toward the screen',
+        'size': '1600x900',
+    },
+
+    'true-ending-07': {
+        'prompt': (
+            'one single full frame image, no panels, no gutters, 16:9 '
+            'composition, warm domestic interior on Earth at night, '
+            'a woman and two young children hug each other tightly in the '
+            'middle of a well lit living room, '
+            'all three are crying with overwhelming happiness, eyes wet '
+            'and mouths open in a relieved smile, '
+            'the mother has one arm around each child and her head bowed '
+            'between them, '
+            'a laptop sits open on the low table in front of them showing '
+            'a plain news page with an image and no readable text, '
+            'warm lamp light from the right, soft shadows, '
+            'family photographs hang on the wall behind as small plain '
+            'frames with no visible faces and no lettering, '
+            'a mug of tea and a folded blanket on the table, '
+            'the mood is intimate, tearful and joyful, cinematic warm '
+            'lighting, shallow depth of field'
+        ),
+        'note': 'true ending 07: gia đình vỡ oà hạnh phúc',
+        'kind': 'ending',
+        'style': TRUE_ENDING_STYLE + ', intimate warm lamp light, faces '
+                 'clear and emotional',
+        'size': '1600x900',
+    },
+
+    'true-ending-08': {
+        'prompt': (
+            'one single full frame image, no panels, no gutters, 16:9 '
+            'composition, a wide space view of the planet Earth, '
+            'deep blue oceans and white cloud bands swirl across the '
+            'centre of the frame, the nightside terminator curving softly '
+            'down the right edge with a thin line of warm city lights, '
+            'a spacecraft carrying the returning crew flies above the '
+            'planet toward the upper right, seen from below and behind, '
+            'small against the scale of the planet, plainly built, white '
+            'grey hull plating with orange detail panels, '
+            'its engine burning as a faint warm glow, '
+            'a dense star field fills the black sky behind the planet, '
+            'the feeling is homecoming, quiet and vast, '
+            'no people visible, no flag, no lettering anywhere, '
+            'no emblem and no badge on the hull'
+        ),
+        'note': 'true ending 08: tàu bay về Trái Đất',
+        'kind': 'ending',
+        'style': TRUE_ENDING_STYLE + ', deep space, vast and quiet, '
+                 'homecoming mood',
+        'size': '1600x900',
+    },
+
     # ---------- năm lớp nền cho Giai đoạn 2 ----------
     # Mỗi ảnh là một lớp nằm SAU nội dung SVG của feature, nên bố cục phải
     # chừa khoảng lặng ở giữa và để chi tiết dồn về mép. Tên bắt đầu bằng
