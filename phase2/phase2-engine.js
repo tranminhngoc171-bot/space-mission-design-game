@@ -119,6 +119,17 @@ const OBJECTIVES = {
  *  Auto-picked groups the player may still override. */
 const AUTO_GROUPS = ['propulsion', 'propellant', 'life_support', 'shielding', 'supplies'];
 
+/** Ba hồ sơ đường bay của cửa sổ chuyển tiếp, đơn vị ngày Trái Đất.
+ *  Ba id này trùng đúng id trong feature-trajectory.js và
+ *  feature-component-modal.js; đổi một bên là phải đổi cả ba.
+ *  The three transfer profiles, in Earth days. The ids match the two
+ *  feature modules that offer the choice. */
+const TRAJECTORY_DAYS = {
+  hohmann: 258.9,
+  fast_transit: 180,
+  bi_elliptic: 320,
+};
+
 /** Cách chấm điểm "tốt nhất có sẵn" cho từng nhóm tự động. Đây là
  *  lựa chọn của nhóm làm game, không phải số liệu NASA.
  *  Scoring for the auto pick, a game side preference, not NASA data. */
@@ -291,6 +302,7 @@ function defaultSelection() {
     life_support: pickBest('life_support'),
     shielding: pickBest('shielding'),
     supplies: pickBest('supplies'),
+    trajectory: 'hohmann',
   };
 }
 
@@ -566,9 +578,16 @@ function computeDesign(state) {
      thẳng thanh thời gian. daysToArrival đổi ra ngày Trái Đất.
      Arrival sols come from the objective, so switching objectives moves
      the time gauge at once. daysToArrival is the Earth day figure. */
-  const solsToArrival = objective.solsToArrival;
+  /* Đường bay đã chọn chỉnh lại thời gian bay của chính mục tiêu, theo
+     tỉ lệ so với hồ sơ Hohmann 258,9 ngày. Giữ nguyên khác biệt thời
+     gian giữa hai mục tiêu, chỉ co giãn theo hồ sơ quỹ đạo.
+     The chosen trajectory scales the objective's own transit time
+     against the 258.9 day Hohmann baseline, so the difference between
+     the two objectives survives while the profile still matters. */
+  const hohmannDays = TRAJECTORY_DAYS.hohmann;
+  const trajDays = TRAJECTORY_DAYS[sel.trajectory] || hohmannDays;
+  const solsToArrival = Math.round(objective.solsToArrival * (trajDays / hohmannDays) * 10) / 10;
   const daysToArrival = solToEarthDays(solsToArrival);
-
   const lifeSupportDays = (summary.supplies_days || 0) + (objective.extraSuppliesDays || 0);
 
   /* Trễ tín hiệu ở chính điểm đến, chia thêm cho chất lượng sóng mà
@@ -1462,7 +1481,17 @@ const phase2Engine = {
     const p = patch || {};
     const group = p.group;
     const part = p.part;
-    if (!group || !part) return getState();
+    if (!group || !part) {
+      /* Riêng nhóm trajectory cho phép gỡ: part = null nghĩa là bỏ chọn
+         hồ sơ đường bay. Các nhóm module không cho gỡ vì engine luôn
+         phải có một module trong mỗi nhóm.
+         Trajectory alone may be cleared with part = null. */
+      if (group === 'trajectory' && part === null) {
+        state.selection.trajectory = null;
+        emitState('selection');
+      }
+      return getState();
+    }
 
     let accepted = false;
 
@@ -1474,6 +1503,11 @@ const phase2Engine = {
     } else if (group === 'launcher') {
       if (launcherOf(part)) {
         state.selection.launcher = part;
+        accepted = true;
+      }
+    } else if (group === 'trajectory') {
+      if (TRAJECTORY_DAYS[part]) {
+        state.selection.trajectory = part;
         accepted = true;
       }
     } else if (GROUP_CATEGORY[group]) {

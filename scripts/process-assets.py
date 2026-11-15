@@ -786,8 +786,10 @@ def main():
     popups = all_popups if args.only in (None, 'panels') else []
     # Tranh ending nằm chung gen/ nhưng KHÔNG được lọt vào vòng quét bg-*,
     # screen-* hay popup-* ở trên. Tiền tố ending_ đứng ngoài mọi glob đó,
-    # nên chỉ cần thêm danh sách riêng.
+    # nên chỉ cần thêm danh sách riêng. Tranh kết thúc thắng dùng tiền tố
+    # true-ending- nên cũng phải quét riêng, cùng một hàm process_ending.
     all_endings = sorted(SRC.glob('ending_*.png')) if SRC.is_dir() else []
+    all_endings = all_endings + sorted(SRC.glob('true-ending-*.png'))
     endings = all_endings if args.only in (None, 'endings') else []
     # Lớp nền Giai đoạn 2: tiền tố p2- tách hẳn khỏi mọi glob khác ở trên,
     # nên chỉ cần một danh sách riêng, không sợ bị xử lý hai lần.

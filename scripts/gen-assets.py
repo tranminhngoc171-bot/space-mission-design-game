@@ -118,6 +118,48 @@ ENDING_STYLE = (
     'no frame, no caption box'
 )
 
+# ---------- năm tranh kết thúc THẮNG (True Ending) ----------
+# Cùng giọng với ENDING_STYLE để dải kết thúc thắng đứng cạnh tám cảnh
+# thua vẫn là một bộ. Khác ba chỗ:
+#
+# (1) KHÔNG khoá con người: khung 04 và 05 bắt buộc có phi hành gia, mặt
+#     nhìn rõ sau kính mũ. Nếu dùng ENDING_STYLE thì model vẫn vẽ được
+#     người, nhưng khối này nói thẳng ra là cảnh có người để chắc chắn.
+# (2) Khoá chặt biểu tượng: không logo NASA, không huy hiệu cơ quan, không
+#     cờ các nước. Đây là luật cứng của dự án; model rất hay tự thêm vòng
+#     tròn xanh "meatball" lên thân tàu hoặc lên ống tay áo nếu không cấm
+#     rõ. Cấm cả phù hiệu, đề can, số sê-ri để không còn chỗ nào sinh ra
+#     chữ.
+# (3) Cho phép chữ duy nhất là tên sứ mệnh HORIZON-IV / MISSION CONTROL,
+#     nhưng các prompt dưới đây đều không xin chữ nào, nên mặc định tranh
+#     sạch chữ hoàn toàn.
+TRUE_ENDING_STYLE = (
+    'full-color science fiction comic book illustration, sharp clean ink '
+    'linework, cinematic dramatic lighting with a strong single key light, '
+    'deep black shadows, rich saturated colour, detailed rendering, '
+    'widescreen 16:9 composition, '
+    'palette of rust orange Mars dust, charcoal grey grit, cold white light, '
+    'amber highlight #E8A33D and pale cyan #4FB8C9 accents, '
+    'absolutely no text, no letters, no numbers, no labels, no signage, '
+    'no writing on any screen or wall, no logo, no watermark, '
+    'no flag of any kind, no national flag, no banner, no pennant, '
+    'no emblem, no insignia, no agency badge, no circular blue and red '
+    'agency roundel, no NASA meatball logo, '
+    'all spacecraft hulls and pressure suits are plain unmarked panelling '
+    'with no lettering, no patch, no decal, no stencil, no serial number'
+)
+
+# Bản cho khung nhiều ô: đường phân cách đen là cố ý, không được coi là
+# viền thừa. ENDING_STYLE có câu "no border, no frame" nên phải ghi đè,
+# không thì model vẽ một tranh liền thay vì chia ô.
+TRUE_ENDING_PANELS = (
+    TRUE_ENDING_STYLE + ', '
+    'a multi panel comic page layout inside a single 16:9 image, '
+    'the panels are separated by clean straight black gutters, '
+    'those black gutters and the panel divisions are intentional and '
+    'required, they are not a border and not a frame'
+)
+
 
 # Bộ này theo Art Direction mới, không theo NASA concept art book cũ: tranh
 # phẳng, nét sạch, đọc được ở cỡ nhỏ, bảng màu khoá cứng 5 màu. Dùng chung
@@ -1340,6 +1382,154 @@ ASSETS = {
         'size': '1600x900',
     },
 
+    # ---------- năm tranh kết thúc THẮNG, khung 01 tới 05 ----------
+    # Tên có tiền tố true-ending- để tách hẳn khỏi tám cảnh thua trong
+    # gen/ và art/. process-assets.py quét thêm glob này, xem all_endings.
+    #
+    # Bố cục là một chuỗi leo thang: 01 một khung toàn cảnh, 02 hai ô
+    # ngang, 03 ba ô, 04 bốn ô, 05 trở lại một khung toàn cảnh. Khung 02
+    # tới 04 đều lặp lại đúng hai ô nhỏ ở trên (cảnh không gian Sao Hỏa,
+    # tàu cứu hộ đã hạ cánh) để mắt đọc được mạch truyện khi lướt qua.
+    'true-ending-01': {
+        'prompt': (
+            'wide deep space view, 16:9 composition, cinematic and quiet, '
+            'the planet Mars as a large rust orange disc centred in frame, '
+            'its surface showing dark canyon scars and pale polar frost, '
+            'a thin cold blue atmospheric rim catching the sunlight, '
+            'zero people in frame, '
+            'a rescue spacecraft from Earth approaching from the lower left, '
+            'small against the scale of the planet, plainly built, white '
+            'grey hull plating with orange detail panels, its main engine '
+            'burning as a soft warm glow, a thin bright exhaust wake '
+            'trailing behind it and dissolving into black, '
+            'cold white sunlight from the upper right rimming the hull, '
+            'absolute black space and a dense field of stars behind, '
+            'the hull is completely bare, no marking of any kind'
+        ),
+        'note': 'true ending 01: tàu cứu hộ tiến vào quỹ đạo Sao Hỏa',
+        'kind': 'ending',
+        'style': TRUE_ENDING_STYLE,
+        'size': '1600x900',
+    },
+    'true-ending-02': {
+        'prompt': (
+            'a comic page divided into exactly two horizontal panels stacked '
+            'one above the other, equal height, a clean straight black '
+            'gutter between them, 16:9 overall, '
+            'TOP PANEL, a smaller wide space view inset: the planet Mars as '
+            'a large rust orange disc centred in frame with dark canyon '
+            'scars and pale polar frost, a thin cold blue atmospheric rim, '
+            'the rescue spacecraft from Earth small at the lower left '
+            'approaching with a soft warm engine glow and a thin exhaust '
+            'wake, black star field behind, no people, '
+            'BOTTOM PANEL, the rescue supply lander firing its braking '
+            'engines and descending steadily toward a flat red rock plain '
+            'on Mars, landing legs extended, four hard white engine plumes '
+            'kicking a soft ring of red dust out across the ground, '
+            'warm low sunset light raking the plain, long shadows, '
+            'the lander is white and grey with black scorch marks around '
+            'the engine bells, plain unmarked hull, '
+            'no flag on the lander and no flag on the ground'
+        ),
+        'note': 'true ending 02: hai ô, tàu đổ bộ hãm phanh trên đồng bằng đỏ',
+        'kind': 'ending',
+        'style': TRUE_ENDING_PANELS,
+        'size': '1600x900',
+    },
+    'true-ending-03': {
+        'prompt': (
+            'a comic page of three panels inside one 16:9 image, dark red '
+            'Mars colour scheme, clean black gutters, '
+            'TOP ROW: two small panels side by side of equal size. '
+            'TOP LEFT PANEL is a wide space view inset: the planet Mars as a '
+            'large rust orange disc centred in frame with dark canyon scars '
+            'and pale polar frost, a thin cold blue atmospheric rim, the '
+            'rescue spacecraft small at the lower left approaching with a '
+            'soft warm engine glow and a thin exhaust wake, black star field '
+            'behind, no people. '
+            'TOP RIGHT PANEL: the same white and grey rescue lander now '
+            'settled and standing still on the flat red rock plain, landing '
+            'legs planted, engine bells cooling, faint scorch marks, its own '
+            'long shadow stretching away across the dust in warm sunset '
+            'light, no flag anywhere, '
+            'BOTTOM PANEL: a large diagonal cut panel occupying the bottom '
+            'left corner, its upper edge cutting diagonally across the page. '
+            'The view is from INSIDE the rescue ship cargo bay looking '
+            'outward: the ribbed dark metal interior frames the shot, the '
+            'airlock hatch is slowly swinging open on heavy hinges, a hard '
+            'wedge of warm orange Martian sky light floods in through the '
+            'widening gap and lays a bright blade across the dark deck, '
+            'dust motes glittering in the light beam, empty cargo bay, '
+            'no people, no figures'
+        ),
+        'note': 'true ending 03: ba ô, cửa khoang hàng mở hé',
+        'kind': 'ending',
+        'style': TRUE_ENDING_PANELS,
+        'size': '1600x900',
+    },
+    'true-ending-04': {
+        'prompt': (
+            'a comic page of four panels inside one 16:9 image, clean black '
+            'gutters, '
+            'TOP ROW: the same two small panels as before, side by side, '
+            'equal size. TOP LEFT PANEL is a wide space view inset: the '
+            'planet Mars as a large rust orange disc centred in frame with '
+            'dark canyon scars and pale polar frost, the rescue spacecraft '
+            'small at the lower left approaching with a warm engine glow and '
+            'a thin exhaust wake, black star field, no people. '
+            'TOP RIGHT PANEL: the white and grey rescue lander settled and '
+            'still on the flat red rock plain, landing legs planted, long '
+            'shadow across the dust in warm sunset light, no flag, '
+            'BOTTOM LEFT PANEL: the large diagonal cut panel in the bottom '
+            'left corner, the view from inside the rescue ship cargo bay, '
+            'the airlock hatch now fully open and swung wide, blinding warm '
+            'orange Martian light pouring in across the dark ribbed deck, '
+            'dust motes glittering in the beam, no people in this panel, '
+            'BOTTOM RIGHT PANEL: a new diagonal cut panel on the bottom '
+            'right. A lone stranded astronaut in a dusty white and orange '
+            'Horizon IV Mars pressure suit stands alone in the middle of the '
+            'empty red plain, absolute no flag anywhere near him and no flag '
+            'in the whole panel, one arm raised high above his head waving '
+            'in greeting toward the arriving rescue ship behind him, the '
+            'other hand open at his side, his body tiny against the vast '
+            'plain, and through the clear visor of his helmet his face is '
+            'clearly visible in close detail, eyes wet and shining with '
+            'tears, mouth open in a shaky overwhelmed smile, joy and relief '
+            'breaking through exhaustion after so many days alone, '
+            'warm low sunset light, red dust in the air'
+        ),
+        'note': 'true ending 04: bốn ô, người sống sót vẫy tay chào',
+        'kind': 'ending',
+        'style': TRUE_ENDING_PANELS + ', the face inside the helmet visor is '
+                 'clearly visible and expressive',
+        'size': '1600x900',
+    },
+    'true-ending-05': {
+        'prompt': (
+            'one single full frame image, no panels, no gutters, 16:9 '
+            'composition, an emotional wide shot on the Martian surface, '
+            'three rescue crew and the stranded survivor embrace tightly in '
+            'a group hug at the centre of frame, arms wrapped around each '
+            'other, helmets still on and pressed together, and through '
+            'their clear scratched visors their faces show both wet tears '
+            'and wide happy smiles after so many days of survival, '
+            'their suits are white EVA pressure suits with orange and grey '
+            'detail panels, dusty and scuffed from the long day, '
+            'one suit still carries red dust thick on the shoulders, '
+            'warm low sunset light from the left rimming every helmet, '
+            'fine red dust floating in the air and glowing in the light, '
+            'the rescue lander blurred out of focus in the far background, '
+            'flat red rock plain and a black orange sky, '
+            'all suits are plain and unmarked, no patch on any shoulder, '
+            'no name tape, no flag on any suit'
+        ),
+        'note': 'true ending 05: khung toàn cảnh, cả nhóm ôm nhau',
+        'kind': 'ending',
+        'style': TRUE_ENDING_STYLE + ', dramatic warm emotion, faces visible '
+                 'through clear helmet visors',
+        'size': '1600x900',
+    },
+
     # ---------- năm lớp nền cho Giai đoạn 2 ----------
     # Mỗi ảnh là một lớp nằm SAU nội dung SVG của feature, nên bố cục phải
     # chừa khoảng lặng ở giữa và để chi tiết dồn về mép. Tên bắt đầu bằng
@@ -1558,15 +1748,17 @@ ASSETS = {
         'prompt': (
             'SPLIT PANEL LAYOUT: the whole 16:9 frame is divided into exactly '
             'TWO WIDE, SHORT HORIZONTAL STRIPS stacked one above the other, '
-            'top panel and bottom panel of equal size with a solid flat black '
-            'gutter band running horizontally right across the full width '
-            'between them, no white paper margin anywhere, the black gutter '
-            'is the only gap, '
+            'top panel and bottom panel of EQUAL SIZE, each strip exactly half '
+            'the frame height, with a thin solid flat black gutter band '
+            'running horizontally right across the full width between them, '
+            'no white paper margin anywhere, the black gutter is the only '
+            'gap, '
             'TOP PANEL: small inset of the glowing monitor with the envelope '
             'icon seen from a distance in the dark room. '
             'BOTTOM PANEL: tight close up of the NASA flight controller '
             'described above, shot from the side, he has just jumped up from '
-            'his chair so fast the chair is tipping backwards, eyes wide open '
+            'his chair so fast the chair is tipping backwards and falling '
+            'over behind him, the chair visibly tipping over, eyes wide open '
             'in shock, mouth open, one arm pointing straight up at the '
             'screen, glasses catching the screen glow, dramatic rim light, '
             + IM_CHARS
@@ -1609,10 +1801,17 @@ ASSETS = {
             'FULL BLEED ART: the illustration fills the entire frame edge to '
             'edge with drawn scenery and characters, there is no paper margin '
             'and no rectangle of flat white anywhere in the picture, '
-            'CAMERA POSITION: the camera stands BEHIND the seated flight '
-            'controller, over the shoulders of the engineers standing behind '
-            'him, looking down at the back of his head and at the screen in '
-            'front of him, we see the BACK of his head, never his face, '
+            'CAMERA POSITION, most important: the camera is placed at the '
+            'BACK of the huddle looking FORWARD past the engineers, so in the '
+            'foreground of the picture we see only the backs of heads, the '
+            'backs of shoulders and the backs of white shirts of the people '
+            'nearest to us, and beyond them the seated flight controller seen '
+            'FROM BEHIND, only the back of his neck and the dark hair on the '
+            'back of his head are visible because he faces away from the '
+            'camera toward his own monitor, his glasses and his face are '
+            'turned away from us and cannot be seen, nobody in this picture '
+            'looks into the camera, every single person faces away from the '
+            'camera or in three quarter back view, '
             + IM_CHARS
         ),
         'note': ('chuyển tiếp 6: cả nhóm nín thở quanh bàn, không có ô trắng '
@@ -1622,17 +1821,24 @@ ASSETS = {
         'size': '1600x900',
     },
     'bg-im-07': {
+        # Cùng lỗi với khung 4: tả "two horizontal panels" thì model xếp hai
+        # ô cạnh nhau thành cột dọc. Phải nói rõ cả khung 16:9 bị chia làm
+        # hai dải NGANG theo chiều cao. Thứ tự đọc giữ nguyên như spec:
+        # dải TRÊN là đám đông quanh bàn, dải DƯỚI là cú click.
         'prompt': (
-            'SPLIT PANEL LAYOUT, two horizontal panels with a clean black '
-            'gutter, the gutter running edge to edge and filled with flat '
-            'black, no border around the outside of the image, '
-            'LEFT PANEL: the same tight group of engineers crowded around the '
+            'SPLIT PANEL LAYOUT: the whole 16:9 frame is divided into exactly '
+            'TWO WIDE, SHORT HORIZONTAL STRIPS stacked one above the other, '
+            'top panel and bottom panel of equal size with a solid flat black '
+            'gutter band running horizontally right across the full width '
+            'between them, no white paper margin anywhere, the black gutter '
+            'is the only gap, '
+            'TOP PANEL: the same tight group of engineers crowded around the '
             'desk, tense faces lit from below by the screen, exactly as in '
             'the previous panel so the scene reads as continuous. '
-            'RIGHT PANEL: extreme macro close up of a male hand pressing down '
-            'on a wired computer mouse, the index finger pressing the button, '
-            'the mouse on a desk mat, cyan screen light on the knuckles, the '
-            'moment of the click frozen, comic book impact, '
+            'BOTTOM PANEL: extreme macro close up of a male hand pressing '
+            'down on a wired computer mouse, the index finger pressing the '
+            'button, the mouse on a desk mat, cyan screen light on the '
+            'knuckles, the moment of the click frozen, comic book impact, '
             + IM_CHARS
         ),
         'note': 'chuyển tiếp 7: cận cảnh cú click, chia hai ô ngang',
