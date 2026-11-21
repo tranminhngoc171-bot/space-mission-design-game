@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ABANDONN — NASA Space Apps 2026</title>
+<style>
+  :root{
+    --bg:#05080e; --panel:#0b1119; --line:#1c2836; --line-hi:#2b3d52;
+    --tx:#c8d6e8; --dim:#7a8b9e; --faint:#4b5866;
+    --cyan:#5ce1e6; --amber:#ffa94d; --green:#35d39a; --red:#ff5c6c;
+    --sans:"Be Vietnam Pro","Segoe UI",system-ui,sans-serif;
+    --mono:"JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#000;color:var(--tx);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .slide{
+    position:relative;width:1600px;height:900px;background:var(--bg);overflow:hidden;
+    padding:64px 80px;display:flex;flex-direction:column;page-break-after:always;break-after:page;
+  }
+  .slide::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--line)}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .kicker{font-family:var(--mono);font-size:15px;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan)}
+  h1{font-size:104px;line-height:.95;letter-spacing:-.02em;font-weight:700;margin:10px 0 18px}
+  h2{font-size:46px;line-height:1.1;letter-spacing:-.01em;font-weight:600;margin:14px 0 26px;max-width:1220px}
+  h3{font-size:20px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:14px}
+  p.lead{font-size:26px;line-height:1.45;color:var(--dim);max-width:1180px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:44px;flex:1;min-height:0}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  ul{list-style:none;display:grid;gap:16px}
+  li{position:relative;padding-left:22px;font-size:21px;line-height:1.45;color:var(--dim)}
+  li::before{content:"";position:absolute;left:0;top:11px;width:8px;height:8px;background:var(--cyan)}
+  li b{color:var(--tx);font-weight:600}
+  .mono-list li{font-family:var(--mono);font-size:17px;letter-spacing:-.01em}
+  figure{display:flex;flex-direction:column;gap:10px;min-height:0}
+  figure img{width:100%;border:1px solid var(--line-hi);display:block;object-fit:cover}
+  figcaption{font-family:var(--mono);font-size:13px;letter-spacing:.06em;color:var(--faint)}
+  .shot-tall img{max-height:560px}
+  table{width:100%;border-collapse:collapse;font-size:19px}
+  th{text-align:left;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--line);padding:0 0 10px}
+  td{padding:13px 0;border-bottom:1px solid var(--line);color:var(--dim)}
+  td:first-child{color:var(--tx)}
+  td.v{font-family:var(--mono);color:var(--cyan);white-space:nowrap}
+  .meta{display:flex;gap:40px;margin-top:auto;padding-top:26px;border-top:1px solid var(--line);font-family:var(--mono);font-size:15px;color:var(--faint)}
+  .meta b{display:block;color:var(--tx);font-size:22px;margin-top:4px;letter-spacing:-.01em}
+  .tag{display:inline-block;border:1px solid var(--line-hi);padding:6px 12px;font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:var(--dim);margin-right:8px}
+  .phase{border:1px solid var(--line);padding:22px 24px;background:var(--panel)}
+  .phase h4{font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--cyan);margin-bottom:10px}
+  .phase p{font-size:19px;line-height:1.5;color:var(--dim)}
+  .quote{font-size:30px;line-height:1.4;color:var(--tx);border-left:3px solid var(--cyan);padding-left:24px;max-width:1150px}
+  .foot{position:absolute;bottom:26px;right:80px;font-family:var(--mono);font-size:13px;color:var(--faint);letter-spacing:.1em}
+  @media print{
+    @page{size:1600px 900px;margin:0}
+    html,body{background:var(--bg)}
+    .slide{page-break-after:always}
+  }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide">
+  <div class="kicker">NASA Space Apps Challenge 2026 · Space Mission Design Game</div>
+  <h1>ABANDONN</h1>
+  <p class="lead">Design a mission to rescue one person. Then find out that every kilogram you left out was a decision made on behalf of someone else.</p>
+  <div class="grid2" style="margin-top:34px">
+    <figure class="shot-tall">
+      <img src="img/01-menu.jpg" alt="Main menu of the game" />
+      <figcaption>Entry point · bilingual, one URL, no install</figcaption>
+    </figure>
+    <div>
+      <h3>What it is</h3>
+      <ul>
+        <li>An interactive <b>space mission design game</b>, inspired by <i>The Martian</i>, grounded in NASA systems engineering.</li>
+        <li><b>Phase 1</b> — survive on Mars: power under dust storms, oxygen, water recycling, relaying telemetry through an orbiter to the Deep Space Network.</li>
+        <li><b>Phase 2</b> — design the rescue from Earth: launcher, trajectory, power source, EDL, telecom, rations.</li>
+        <li>Two phases, <b>one continuous mission</b>: the distress telemetry you send in Phase 1 becomes the input of Phase 2.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="meta">
+    <div>TEAM<b>Ngọc · Thiện Nhân</b></div>
+    <div>TRACK<b>Space Mission Design Game</b></div>
+    <div>BUILD<b>Plain HTML / CSS / ES modules</b></div>
+    <div>RUNS<b>In any browser, no install</b></div>
+  </div>
+  <div class="foot">01 / 07</div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The gap we are closing</div>
+  <h2>Mission design is taught as separate subjects. Real missions are one system where every fix breaks something else.</h2>
+  <div class="grid2">
+    <div>
+      <h3>How it is usually taught</h3>
+      <ul>
+        <li>Orbital mechanics in one course, power budgets in another, communications in a third.</li>
+        <li>Existing tools simulate <b>one topic</b> well: a rocket launch, an orbit, a solar array.</li>
+        <li>Trade-offs stay abstract: nothing makes you feel that a 12 kg instrument costs you a landing system.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What the challenge asks for</h3>
+      <ul>
+        <li>An interactive game where players <b>design, manage and simulate</b> a complete mission.</li>
+        <li>Feedback that explains <b>why</b> a mission failed, not just that it did.</li>
+        <li>Every decision has a consequence in mass, power, budget, data, communications or time.</li>
+        <li>Accessible to players who know nothing about space engineering.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="quote" style="margin-top:30px">A student who is told the mass budget matters learns nothing. A student who is shown the exact kilogram that would have saved the crew learns it permanently.</p>
+  <div class="foot">02 / 07</div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">The idea</div>
+  <h2>One mission, viewed from both ends. Mars is the problem. Earth is where the answer gets designed.</h2>
+  <div class="grid3">
+    <div class="phase">
+      <h4>PHASE 1 · ON MARS</h4>
+      <p>You are the person left behind. Each sol you allocate one energy pool across heating, farming, water, repair, science and the radio. Dust storms cut generation, water recycling is a closed loop with losses, and every message to Earth travels through an orbiting relay.</p>
+    </div>
+    <div class="phase">
+      <h4>THE HANDOFF</h4>
+      <p>When the distress signal reaches Earth, the game hands over the exact telemetry you earned: how many sols of life support remain, crop health, whether a dust storm is active, and the Earth–Mars distance that sets the light-time delay.</p>
+    </div>
+    <div class="phase">
+      <h4>PHASE 2 · ON EARTH</h4>
+      <p>You enter a NASA-style Mission Design Lab. Launcher, transfer trajectory, power source, entry-descent-landing architecture, telecom, rations. Four engineering margins must survive a JPL Concept Maturity Level 4 review before launch.</p>
+    </div>
+  </div>
+  <div class="grid3" style="margin-top:26px">
+    <div class="phase"><h4>LAUNCH SEGMENT</h4><p>Launcher capacity, cost, lead time. Mass margin must survive a 15 % reserve before a single instrument is chosen.</p></div>
+    <div class="phase"><h4>SPACE SEGMENT</h4><p>Bus, power source (solar versus RTG), batteries, entry-descent-landing architecture. A Mars array needs 2.3× the area of an Earth one for the same watts.</p></div>
+    <div class="phase"><h4>GROUND &amp; USER</h4><p>Downlink windows, proximity link for the beacon, and what the crew actually receives. Data that cannot be sent home does not exist.</p></div>
+  </div>
+  <div class="foot">03 / 07</div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">Phase 1 · the survival model</div>
+  <h2>Real Mars systems, simplified to numbers a student can act on.</h2>
+  <div class="grid2">
+    <div>
+      <table>
+        <tr><th>Real system</th><th>What the player does</th></tr>
+        <tr><td>Dust storm sensing (MEDA)</td><td class="v">read opacity → cut array output</td></tr>
+        <tr><td>Oxygen generation (MOXIE)</td><td class="v">trade power for O₂ reserves</td></tr>
+        <tr><td>Water recycling (ECLSS)</td><td class="v">seal losses or lose the crop</td></tr>
+        <tr><td>Orbiter relay (MRO)</td><td class="v">wait for a pass window to transmit</td></tr>
+        <tr><td>Deep Space Network</td><td class="v">one-way light time 4–24 min</td></tr>
+        <tr><td>Surface EVA</td><td class="v">walk to a beacon site and back</td></tr>
+      </table>
+      <p class="lead" style="font-size:20px;margin-top:22px">Every action costs one of six resources: mass, power, calories, data, comms and time. Nothing is free, and nothing is wasted silently.</p>
+    </div>
+    <figure class="shot-tall">
+      <img src="img/03-prologue.jpg" alt="Comic prologue, twelve beats, no dialogue" />
+      <figcaption>Prologue · the story is told in frames, then played</figcaption>
+    </figure>
+  </div>
+  <div class="foot">04 / 07</div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">Phase 2 · the trade space</div>
+  <h2>Four NASA mission segments, and four margins that decide whether the rescue flies.</h2>
+  <div class="grid2">
+    <div>
+      <table>
+        <tr><th>Margin</th><th>Requirement</th><th>Why it bites</th></tr>
+        <tr><td>Dry mass</td><td class="v">≥ 35 %</td><td>systems always grow after design freeze</td></tr>
+        <tr><td>Power &amp; thermal</td><td class="v">≥ 35 %</td><td>a solar array loses ~30 % in a dust storm</td></tr>
+        <tr><td>Telecom, deep space</td><td class="v">≥ 3 dB</td><td>closing the link across 215 M km</td></tr>
+        <tr><td>Telecom, proximity</td><td class="v">≥ 6 dB</td><td>locking the surface beacon during EDL</td></tr>
+        <tr><td>Delta-V</td><td class="v">launcher ≥ trajectory</td><td>a fast transit needs 5.1 km/s, a medium launcher gives 4.1</td></tr>
+        <tr><td>CML 4 gate</td><td class="v">≥ 80 % green, no red</td><td>one red item keeps the launch locked</td></tr>
+      </table>
+      <p class="lead" style="font-size:20px;margin-top:22px">Difficulty is not more numbers — it is less freedom. Every choice removes options from the next one, and the engine re-scores the same design under a stricter criterion once the mission is already flying.</p>
+    </div>
+    <figure class="shot-tall">
+      <img src="img/02-loading.jpg" alt="Mission start, loading sequence" />
+      <figcaption>Handoff · the survival telemetry you earned becomes the design problem</figcaption>
+    </figure>
+  </div>
+  <div class="foot">05 / 07</div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">The gate and the debrief</div>
+  <h2>Before launch, a JPL-style review. After failure, an explanation, not a score.</h2>
+  <div class="grid2">
+    <div>
+      <h3>How the gate works</h3>
+      <ul>
+        <li>Eight review items across science, flight dynamics, margins, power, telecom, EDL, planetary protection and launch safety.</li>
+        <li><b>Launch stays locked</b> while any item is red, or fewer than 80 % are green.</li>
+        <li>Clicking a red row opens the engineering reason, not a hint: why 6 dB is needed for a proximity link, why perchlorates must be treated, why an RTG needs nuclear launch approval.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>How failure is taught</h3>
+      <ul>
+        <li>The debrief names the discipline that lost and the exact figure: “budget over by 8.3 M, mass over by 140 kg, proximity link short by 1.8 dB”.</li>
+        <li>Every failure carries a fix, in the same units the player was already reading.</li>
+        <li>Designs are seeded and replayable, so two players can compare the same mission honestly.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot">06 / 07</div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">Impact</div>
+  <h2>What a player walks away with.</h2>
+  <div class="grid2">
+    <div>
+      <ul>
+        <li><b>Design for the contingency you are not paid to design for.</b> The margin you cut is the margin that saves the crew.</li>
+        <li><b>Integrated thinking.</b> Four segments, six resources, one system: change the launcher and the communications budget moves.</li>
+        <li><b>Honest engineering communication.</b> Numbers, not adjectives: 35 %, 3 dB, 6 dB, 5.1 km/s.</li>
+        <li><b>Accessibility.</b> No prior knowledge required: every term is explained where it is used, and the whole game runs in a browser.</li>
+      </ul>
+      <h3 style="margin-top:28px">Grounded in NASA material</h3>
+      <p class="lead" style="font-size:19px">Design and Develop Science Missions (four mission segments) · Goddard Mission Design Lab workflow · JPL Concept Maturity Levels · NASA NSSDC Mars Fact Sheet · benchmarked against NASA’s Webb telescope design game. Every simplification we made is stated openly in the repository.</p>
+    </div>
+    <div>
+      <figure class="shot-tall">
+        <img src="img/01-menu.jpg" alt="Main menu" />
+        <figcaption>One URL, two languages, no install · the whole game runs in a browser</figcaption>
+      </figure>
+      <div style="margin-top:18px">
+        <span class="tag">PLAY IN BROWSER</span><span class="tag">VI / EN</span><span class="tag">OPEN SOURCE</span>
+      </div>
+      <p class="lead" style="font-size:19px;margin-top:18px">bersious.io.vn/nasa<br>github.com/tranminhngoc171-bot/space-mission-design-game</p>
+    </div>
+  </div>
+  <p class="quote" style="font-size:26px;margin-top:8px">There is no perfect design. There is only the cost you chose to accept.</p>
+  <div class="foot">07 / 07</div>
+</section>
+
+</body>
+</html>
