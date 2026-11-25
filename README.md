@@ -59,8 +59,7 @@ space-mission-design-game/
 │       └── events/             # 16 kịch bản khủng hoảng trên đường bay (48 nhánh lựa chọn)
 ├── phase2/                     # Luồng điều khiển Giai đoạn 2 (4 bước vận hành, 12 module JS)
 ├── data/                       # Bộ dữ liệu tham chiếu sứ mệnh
-├── docs/                       # Tài liệu thiết kế, cân bằng, trích dẫn NASA, kịch bản
-│   └── storyboard-sketches-minhngoc/  # 7 trang phác thảo phân cảnh gốc của trưởng dự án
+├── docs/                       # Tài liệu thiết kế game, công thức cân bằng, trích dẫn NASA & kịch bản
 └── scripts/                    # Bộ kiểm thử tự động Node.js xác thực dữ liệu và engine vật lý
 
 ```
@@ -79,7 +78,7 @@ Mọi hằng số vật lý và thông số kỹ thuật trong game đều đư�
 | `src/data/nasa/mars_comms_protocol.json` | Ngân sách điện năng, độ đục bụi khí quyển (Mars 2020 MEDA), cửa sổ vệ tinh MRO, 6 gói telemetry, 3 trạm DSN cách nhau $120^\circ$ kinh độ |
 | `src/data/events/role_negotiations.json` | 16 sự kiện phát sinh trong chuyến bay và 48 phương án giải quyết |
 
-Chi tiết nguồn tham chiếu khoa học được lưu tại [`docs/11-NASA-RESOURCES.md`](docs/11-NASA-RESOURCES.md) và [`docs/13-COMMS-SCIENCE.md`](docs/13-COMMS-SCIENCE.md).
+Chi tiết nguồn tham chiếu khoa học được lưu tại [`docs/11-NASA-RESOURCES.md`](https://www.google.com/search?q=docs/11-NASA-RESOURCES.md) và [`docs/13-COMMS-SCIENCE.md`](https://www.google.com/search?q=docs/13-COMMS-SCIENCE.md).
 
 ---
 
@@ -130,7 +129,7 @@ Thư mục: [`docs/storyboard-sketches-minhngoc/`](docs/storyboard-sketches-minh
 
 ## Bản Quyền & Ghi Công
 
-* **Mã nguồn:** Phát hành theo giấy phép [MIT License](LICENSE).
+* **Mã nguồn:** Phát hành theo giấy phép [MIT License](https://www.google.com/search?q=LICENSE).
 * **Tư liệu hình ảnh & dữ liệu:** Video mở đầu sử dụng từ Wikimedia Commons theo giấy phép **CC0 1.0**. Ảnh bề mặt Sao Hỏa và dữ liệu quỹ đạo thuộc phạm vi công cộng (Public Domain) của **NASA** và **USGS**.
 * **Quy chuẩn nhận diện:** Toàn bộ tên gọi, biểu trưng và nhận diện đồ họa của **ABANDONN** đều do nhóm tự thiết kế; logo NASA chỉ xuất hiện trong mục ghi công tuân thủ quy định sử dụng tài nguyên truyền thông của NASA.
 
