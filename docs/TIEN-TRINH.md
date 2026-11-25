@@ -38,7 +38,62 @@ Phase 2 nằm NGOÀI `src/` (thiết kế cũ) nhưng game nạp nó qua `../pha
 Workflow `sync-game.yml` đã được sửa để có bước rsync riêng cho `phase2/`.
 Nếu ai sửa lại workflow, phải giữ bước đó, không thì cả Giai đoạn 2 trả 404.
 
+### Bẫy 3: đường dẫn import của `phase2/` phải là `../`, KHÔNG phải `../src/`
+
+Đây là bẫy đã làm sập Giai đoạn 2 hai lần, ngày 16/11. Đọc kỹ trước khi
+sửa bất kỳ dòng import nào trong `phase2/`.
+
+**Vì sao:** workflow `sync-game.yml` chép `_source/src/` vào **gốc** thư mục
+`nasa/`, tức là trên bản deploy KHÔNG có thư mục `src/`. Trong khi đó
+`phase2/` được chép thành `nasa/phase2/`. Nên từ trong `phase2/`:
+
+| Viết | Trên deploy trỏ tới | Kết quả |
+|---|---|---|
+| `../i18n.js` | `/nasa/i18n.js` | **200 đúng** |
+| `../src/i18n.js` | `/nasa/src/i18n.js` | **404, sập bước 1-3** |
+
+**Nhưng ở máy local thì ngược lại** (repo có `src/` thật, serve ở
+`team-repo` root thì `../i18n.js` = `/i18n.js` = 404). Đây chính là lý do
+lỗi này tái đi tái lại: sửa cho một môi trường thì hỏng môi trường kia.
+
+**Luật:** `phase2/` LUÔN dùng đường dẫn phẳng `../` — vì đó là hình dạng
+của bản deploy mới là thứ được chấm. Muốn test local mà đúng thì phải mô
+phỏng cấu trúc phẳng:
+
+```bash
+# Dựng bản mô phỏng đúng như workflow rồi serve thư mục đó
+python -c "
+import os,shutil,fnmatch
+b=r'C:/Users/nguye/workspace/nasa-space-apps-2026/team-repo'
+s=r'C:/Users/nguye/AppData/Local/hermes/cache/scratch/nasa-flatsim'
+shutil.rmtree(s,ignore_errors=True)
+def cp(a,d):
+    os.makedirs(d,exist_ok=True)
+    for n in os.listdir(a):
+        p=os.path.join(a,n)
+        if os.path.isdir(p): cp(p,os.path.join(d,n))
+        elif not any(fnmatch.fnmatch(n,g) for g in ['dev-*.js','__*-*']): shutil.copy2(p,os.path.join(d,n))
+cp(b+'/src',s); cp(b+'/phase2',s+'/phase2')
+"
+cd "$s" && python -m http.server 8353
+```
+
+Kiểm bằng một lệnh là biết ngay:
+
+```bash
+cd team-repo && grep -rn '\.\./src/' phase2/*.js phase2/*.css \
+  | grep -vE ':[0-9]+:[[:space:]]*(\*|/\*|-|//)'
+# phải KHÔNG ra dòng code nào (comment thì được)
+```
+
+Hai commit đã sửa lỗi này: `d44a47e` (đổi `../src/` → `../`) và `77b7d89`
+(hai chỗ còn sót). Ngày 17/11 nó tái phát lần ba với 25 dòng trong 18 file —
+sửa lại về `../` và đã kiểm: 11 module Phase 2 nạp được, 8 file CSS
+`@import` đều 200 trên bản mô phỏng deploy.
+
 ---
+
+
 
 ## 3. Quy trình deploy (làm đúng thứ tự này)
 
