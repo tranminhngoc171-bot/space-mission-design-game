@@ -1,149 +1,114 @@
-# Space Mission Design Game
+# ABANDONN — Space Mission Design Game
 
-Một người sống sót trên Sao Hỏa, một đội cứu hộ ba người ở Trái Đất, và 258,9 ngày bay giữa hai nơi.
+*Một người mắc lại trên Sao Hỏa. Ba người ở Trái Đất phải thiết kế một con tàu đi đón người đó, rồi sống sót cùng nhau trong 258,9 ngày bay.*
 
-Người chơi gửi được tín hiệu cầu cứu, thiết kế con tàu đi đón mình, rồi bay suốt tám tháng rưỡi trong khi ba phi hành gia tranh cãi nhau về từng quyết định. Mỗi lựa chọn đều mất một thứ để được một thứ khác, và game luôn nói rõ cái giá trước khi bắt người chơi trả.
+Cậu không điều khiển một phi hành gia chạy nhảy trên bề mặt Sao Hỏa. Cậu ngồi trong phòng điều khiển, chọn từng module cho con tàu cứu hộ, nhìn ba thanh ngân sách, khối lượng và delta-v nhích lên, rồi đẩy con tàu đi và nghe ba người bên trong tranh cãi nhau về mọi quyết định. Có lần cậu phải cắt sưởi để dồn điện cho lần đốt hiệu chỉnh. Có lần cậu giữ kênh liên lạc với Trái Đất và trả giá bằng khẩu phần. Không có lựa chọn nào cho không cả. Game này được làm ra để cậu cảm thấy cái giá đó.
 
 **NASA Space Apps Challenge 2026** · Đề bài: [Space Mission Design Game](https://www.spaceappschallenge.org/2026/challenges/space-mission-design-game/)
 
-Địa chỉ chơi: **https://bersious.io.vn/nasa**
+Chơi thử: **https://bersious.io.vn/nasa**
 
 ---
 
-## Đội
+## Câu chuyện và cách chơi
 
-| GitHub | Phụ trách |
+Mười hai khung comic mở đầu không một lời thoại. Cơn bão cát ập tới, đội chạy về tàu, một người bị bỏ lại phía sau. Cậu hiểu chuyện bằng mắt, như xem đoạn mở của một bộ phim.
+
+Sau đó là ba bước gọi tín hiệu về Trái Đất. Ăng-ten chính đã gãy, chỉ còn bộ phát UHF tầm ngắn. Bụi làm tấm pin chỉ còn 35 phần trăm công suất, cấp được 1.820 W mà bộ phát cần 850 W. Cậu phải tắt bớt thiết bị nhưng không được cắt bơm oxy. Rồi bắt đúng cửa sổ 90 giây khi vệ tinh MRO bay ngang, nâng tín hiệu lên 15 dB, đóng gói dữ liệu vào 16 byte và gửi đi 225 triệu km. Tín hiệu tới một trong ba trạm Deep Space Network: Goldstone, Madrid hoặc Canberra.
+
+Đến màn thiết kế tàu, cậu có 12 module chia 8 nhóm. Mỗi module có khối lượng, công suất, giá tiền và một câu nói thật lòng về nó đánh đổi cái gì. Ngân sách không quá 900 triệu USD, tải trọng không quá 70.000 kg, delta-v phải đủ 6.650 m/s cộng dồn qua bốn chặng. Công thức Tsiolkovsky nói rằng ở Isp 320 thì 83 phần trăm khối lượng phải là nhiên liệu. Đó là lý do con tàu cứu hộ không thể nhỏ, và cũng là bài học chính của màn này.
+
+Chặng cuối là chuyến bay. Đường chuyển Hohmann được vẽ thật trên Canvas, có ba mốc đốt hiệu chỉnh. Trong 258,9 ngày có 16 tình huống nảy ra, mỗi tình huống ba phương án. Mỗi phương án làm một vai hài lòng và chọc giận hai vai kia. Đồng thuận tụt quá sâu thì đội tan rã, và cậu không về được tới Sao Hỏa. Nếu thua, game không hiện chữ "Game Over" cho xong chuyện. Nó chỉ ra đúng chỗ cậu đánh đổi sai và giải thích vì sao.
+
+Có hai nhánh kết thúc. Đi hết Giai đoạn 1 thì vào báo cáo tổng kết qua màn bay. Đi tiếp Giai đoạn 2 thì có thêm bốn bước chốt mục tiêu, lắp tàu, kiểm tra và phóng. Báo cáo xếp hạng từ A đến D, đối chiếu thiết kế của cậu với Curiosity, Perseverance và MAVEN.
+
+Giao diện song ngữ Việt và Anh, chuyển bằng một cú bấm, nhớ lựa chọn của cậu giữa các lần mở lại. Chạy tốt trên điện thoại lẫn máy tính.
+
+---
+
+## Nhóm làm game
+
+| Thành viên | Vai trò |
 |---|---|
-| [@tranminhngoc171-bot](https://github.com/tranminhngoc171-bot) | Engine mô phỏng, chấm điểm, dữ liệu NASA, đàm phán vai trò |
-| [@bersious](https://github.com/bersious) | Giao diện, màn chơi, kể chuyện, art, âm thanh, deploy |
+| **Trần Minh Ngọc** — Trưởng dự án | Ý tưởng gốc. Phác họa khung hình, bố cục comic và UI/UX. Thiết kế hệ thống: luồng chơi, bảng tài nguyên, bộ luật đánh đổi và kiến trúc các module. |
+| **Nguyễn Thành Thiện Nhân** | Triển khai ý tưởng thành game chạy được. Dựng các màn chơi, nối dữ liệu với engine, kiểm soát các AI agent trong quá trình phát triển, rà soát từng luồng từ mở màn tới kết thúc. |
 
-Ngọc giữ quyền admin repo, Thiện Nhân giữ quyền write. Quy tắc chia vùng file nằm trong `docs/14-AGENT-RULES.md`, đọc trước khi viết dòng code đầu tiên vì hai agent chạy song song.
+Repo gốc: https://github.com/tranminhngoc171-bot/space-mission-design-game
+
+Trang web: https://bersious.io.vn/nasa
 
 ---
 
-## Bốn chặng chơi
+## Đồ đã làm
 
-```
-Tỉnh dậy          Gửi cầu cứu       Thiết kế tàu       Bay 258,9 ngày
-trong Hab    →    3 bước viễn thông  → 12 module    →  16 tình huống đàm phán
-(comic 12 khung)  (trạm MRO, DSN)    (ngân sách,       (đồng thuận đội,
-                                      khối lượng,      3 mối quan hệ)
-                                      delta-v)
-```
+### Game và mã nguồn
 
-### Chặng 1: mở màn dạng truyện tranh
+| Thứ | Link hoặc nơi lấy |
+|---|---|
+| Game chạy trực tiếp | https://bersious.io.vn/nasa |
+| Repo chính của nhóm | https://github.com/tranminhngoc171-bot/space-mission-design-game |
+| Màn chơi, engine và dữ liệu | [`src/`](src/) — 56 module JavaScript, 34 file CSS, 573 khóa song ngữ Việt và Anh |
+| Giai đoạn 2 | [`phase2/`](phase2/) — bốn bước điều khiển sứ mệnh, 12 module JavaScript |
+| Dữ liệu gốc | [`data/`](data/) và [`src/data/`](src/data/) — mọi số đều có trường `source`, số ước tính của nhóm được ghi là ước tính |
+| Tài liệu thiết kế | [`docs/`](docs/) — đề bài, game design, cân bằng, chấm điểm, nguồn NASA, quy tắc agent, art slot |
+| Kịch bản game | `docs/kich-ban-game.txt` |
+| Bộ test | [`scripts/`](scripts/) — `test_nasa_data.mjs`, `test_negotiation.mjs`, `test_mission_viz.mjs`, `smoke_engine.mjs` |
 
-Mười hai khung hình không một chữ nào. Một cơn bão cát, một đội chạy về tàu, một người bị bỏ lại. Người chơi hiểu chuyện bằng mắt, giống đoạn mở phim, không có phụ đề giải thích.
+### Trình bày và hình ảnh
 
-Các khung dồn lại thành trang truyện: khung cũ thu nhỏ thành ô nhỏ góc trên trái trong khi khung mới hiện lớn bên cạnh, ô vát chéo cho khoảnh khắc phát hiện nguy hiểm, khung kết chương viền kép. Bố cục này do người vẽ phác thảo tay, xem `docs/15-ART-SLOTS.md`.
+| Thứ | Nơi lấy |
+|---|---|
+| Pitch deck chính thức | `ABANDONN - NASA Space Apps Pitch Deck.pptx` |
+| Slide thuyết trình bản dựng | `NASA-Game-Thuyet-Trinh.pptx` |
+| Bộ logo vector và raster | `NASA-Game-Logo/` — SVG nguồn, PNG các cỡ 32/192/512/1024, WebP, favicon.ico, bản sáng và bản tối |
+| Prompt tạo logo | `NASA-Game-Logo-Prompts.md` |
+| Hướng dẫn nghệ thuật | `UI_ART_DIRECTION_REPORT.md` |
+| Báo cáo ca làm việc | `NIGHT_SHIFT_REPORT.md` |
 
-### Chặng 2: liên lạc Trái Đất, ba bước
-
-Ăng-ten chính gãy, chỉ còn bộ phát UHF tầm ngắn. Người chơi phải:
-
-1. **Cân bằng điện năng.** Bụi dày làm pin mặt trời chỉ còn 35 phần trăm, cấp được 1.820 W. Bộ phát cần 850 W. Phải tắt bớt thiết bị để dôi ra 650 W, nhưng không được tắt bơm oxy và sưởi chính.
-2. **Bắt nhịp vệ tinh.** Mars Reconnaissance Orbiter bay ngang qua trong cửa sổ 90 giây. Chỉnh góc ngẩng và tần số UHF 401,5 MHz cho tín hiệu đạt 15 dB trở lên.
-3. **Đóng gói dữ liệu.** Sáu gói telemetry, chỉ được gửi ba gói trong 16 byte. Gửi xong thì tín hiệu đi 225 triệu km, mất 12 phút 30 giây, bắt vào một trong ba trạm Deep Space Network: Goldstone, Madrid, Canberra.
-
-### Chặng 3: thiết kế tàu cứu hộ
-
-Mười hai module chia tám nhóm: động cơ, điện, liên lạc, nhiên liệu, sinh hoạt, chắn bức xạ, hạ cánh, khoa học. Mỗi module có khối lượng, công suất, giá tiền, và một câu nói rõ nó đánh đổi cái gì.
-
-Ba thanh không được vượt:
-
-| Giới hạn | Ngưỡng | Vượt thì |
-|---|---|---|
-| Ngân sách | 900 triệu USD | Không phóng được |
-| Tải trọng tên lửa | 70.000 kg lên quỹ đạo thấp | Không phóng được |
-| Delta-v | 6.650 m/s cộng dồn bốn chặng | Không tới được Sao Hỏa |
-
-Delta-v bốn chặng: rời quỹ đạo thấp 3.570, bay nhật tâm 5.594, bắt vào quỹ đạo Sao Hỏa 2.080, hạ cánh 1.000 m/s. Công thức Tsiolkovsky cho biết ở Isp 320 cần **83 phần trăm khối lượng là nhiên liệu** để có 5.600 m/s. Đó là lý do tàu cứu hộ phải to, và cũng là bài học chính của màn này.
-
-### Chặng 4: bay và đàm phán
-
-Bản đồ quỹ đạo vẽ đường chuyển Hohmann thật trên Canvas, có ba mốc đốt hiệu chỉnh quỹ đạo. Trong 258,9 ngày, mười sáu tình huống nảy ra theo bốn giai đoạn: bay xa Trái Đất, tiếp cận Sao Hỏa, hạ cánh, trên mặt đất.
-
-Mỗi tình huống có ba phương án, mỗi phương án làm hài lòng một vai và chọc giận hai vai còn lại. Chỉ số đồng thuận tụt thì đội tan rã và màn chơi thua. Ví dụ: tắt sưởi để dồn điện cho lần đốt hiệu chỉnh, hay giữ liên lạc với Trái Đất thay vì tiết kiệm điện, hay bỏ bốn mươi ký mẫu đá để kịp cửa sổ về.
+Các file trình bày và logo nằm trong thư mục lưu trữ trên máy của nhóm, không nằm trong repo vì dung lượng lớn. Cần bản sao thì liên hệ một trong hai người ở bảng trên.
 
 ---
 
 ## Dữ liệu lấy từ đâu
 
-Mọi con số đều có trường `source` ghi rõ nguồn. Số nào là ước tính của nhóm làm game thì ghi thẳng là ước tính, không gán bừa cho NASA.
+Mọi con số trong game đều có nguồn. Số nào là ước tính của nhóm thì ghi thẳng là ước tính, không gán bừa cho NASA.
 
 | File | Nội dung |
 |---|---|
-| `src/data/nasa/rescue_mission.json` | Bốn chặng delta-v, thời gian bay, chu kỳ giao hội 779,9 ngày, bảng trễ tín hiệu, hằng số vật lý |
-| `src/data/nasa/rescue_modules.json` | Mười hai module tàu, ba loại động cơ Isp 320, 450, 900 |
-| `src/data/nasa/crew_roles.json` | Ba vai, chủ đề họ phản đối mạnh, chỉ số họ cải thiện |
-| `src/data/nasa/mars_comms_protocol.json` | Ngân sách điện, dữ liệu MEDA, vệ tinh MRO, sáu gói telemetry, ba trạm DSN |
-| `src/data/events/role_negotiations.json` | Mười sáu sự kiện, bốn mươi tám phương án |
-| `data/*.json` | Bảng cân bằng gốc: thiết bị, quỹ đạo, tên lửa, sự kiện, bối cảnh |
+| `src/data/nasa/rescue_mission.json` | Bốn chặng delta-v 3.570 / 5.594 / 2.080 / 1.000 m/s, thời gian bay 258,9 ngày, chu kỳ giao hội 779,9 ngày, bảng trễ tín hiệu |
+| `src/data/nasa/rescue_modules.json` | 12 module tàu, ba loại động cơ Isp 320 / 450 / 900 |
+| `src/data/nasa/crew_roles.json` | Ba vai và chủ đề họ phản đối mạnh nhất |
+| `src/data/nasa/mars_comms_protocol.json` | Ngân sách điện, dữ liệu MEDA, vệ tinh MRO, sáu gói telemetry, ba trạm DSN cách nhau 120 độ kinh độ |
+| `src/data/events/role_negotiations.json` | 16 sự kiện, 48 phương án |
 
-Tài liệu phân tích: `docs/11-NASA-RESOURCES.md` (777 dòng, chín nguồn NASA đã mở và đọc), `docs/13-COMMS-SCIENCE.md` (vì sao phải có trạm trung chuyển, vì sao 401,5 MHz, vì sao cần ba trạm DSN cách nhau 120 độ kinh độ).
-
----
-
-## Cấu trúc repo
-
-```
-docs/                 tài liệu thiết kế và phân tích
-  logs/               nhật ký làm việc, ghi quyết định
-data/                 bảng số liệu gốc, nguồn sự thật cho mọi con số cân bằng
-src/                  37 module JavaScript, 20 file CSS
-  data/nasa/          dữ liệu NASA đã kiểm nguồn
-  data/events/        16 sự kiện đàm phán
-  assets/art/         ảnh cảnh và icon (WebP)
-  assets/audio/       nhạc nền, hiệu ứng
-  assets/video/       video intro
-  css/tokens.css      toàn bộ màu, cỡ chữ, khoảng cách
-scripts/              sinh ảnh, xử lý ảnh, mô phỏng cân bằng, xuất kịch bản
-```
-
-### Các module chính
-
-| File | Việc nó làm |
-|---|---|
-| `prologue.js` | Mười hai khung comic không lời thoại, hiệu ứng thu nhỏ ô và mở mí mắt |
-| `story.js` | Màn kể chuyện dự phòng, 24 lượt song ngữ |
-| `comms.js` | Ba bước viễn thông: điện, ăng-ten, gói tin |
-| `rescue-designer.js` | Thiết kế tàu, ba thanh giới hạn, kiểm tra thiết kế |
-| `flight.js` | Bản đồ quỹ đạo ghép panel đàm phán |
-| `negotiation.js` | Logic đồng thuận đội, không dính DOM, test được bằng node |
-| `nasa-data.js` | Tám hàm thuần: Tsiolkovsky, trễ tín hiệu, kiểm tra thiết kế |
-| `mission-viz.js` | Vẽ quỹ đạo Hohmann trên Canvas |
-| `base.js` | Màn căn cứ sinh tồn, bảy chỉ số, sáu hành động |
-| `save-game.js` | Lưu tiến trình tự động, gói chín khóa thành một bản lưu |
-| `i18n.js` | 802 khóa song ngữ Việt và Anh |
+Đọc kỹ hơn tại [`docs/11-NASA-RESOURCES.md`](docs/11-NASA-RESOURCES.md) và [`docs/13-COMMS-SCIENCE.md`](docs/13-COMMS-SCIENCE.md).
 
 ---
 
-## Chạy thử ở máy
+## Chạy ở máy
 
-Game là HTML, CSS, JavaScript thuần, không cần bước build.
+Game là HTML, CSS và JavaScript thuần, không cần bước build.
 
 ```bash
 cd src
 python -m http.server 8311
-# mở http://localhost:8311
 ```
 
-Mở thẳng file `index.html` bằng `file://` sẽ không chạy, vì game đọc dữ liệu JSON qua `fetch` và trình duyệt chặn thao tác đó ở giao thức file.
+Rồi mở http://localhost:8311. Mở thẳng `index.html` bằng `file://` sẽ không chạy, vì game đọc JSON qua `fetch` và trình duyệt chặn ở giao thức file.
 
-### Chạy kiểm thử
+Chạy kiểm thử từ gốc repo:
 
 ```bash
-node scripts/test_nasa_data.mjs       # 26 mục
-node scripts/test_negotiation.mjs     # 1026 mục
-node scripts/test_mission_viz.mjs     # 119 mục
-node scripts/smoke_engine.mjs         # engine và chấm điểm
-python scripts/sim-35-sol.py          # mô phỏng 35 ngày sinh tồn
+node scripts/test_nasa_data.mjs
+node scripts/test_negotiation.mjs
+node scripts/test_mission_viz.mjs
+node scripts/smoke_engine.mjs
 ```
 
 ---
 
-## Bản quyền và ghi công
+## Ghi công
 
-Mã nguồn theo giấy phép MIT.
+Mã nguồn theo giấy phép MIT. Video intro lấy từ Wikimedia Commons theo giấy phép CC0 1.0. Ảnh bề mặt Sao Hỏa và dữ liệu quỹ đạo thuộc phạm vi công cộng của NASA và USGS. Logo và nhận diện của game do nhóm tự dựng, không dùng biểu trưng NASA làm nhận diện sản phẩm. Biểu trưng NASA chỉ xuất hiện trong trang ghi công.
 
-Video intro lấy từ Wikimedia Commons, giấy phép CC0 1.0. Ảnh bề mặt Sao Hỏa và các dữ liệu quỹ đạo thuộc phạm vi công cộng của NASA và USGS. Tra cứu chi tiết từng ảnh trong `src/assets/video/README.md` và `src/assets/art/asset-manifest.json`.
+NASA Space Apps Challenge 2026. Làm bởi Trần Minh Ngọc và Nguyễn Thành Thiện Nhân.
