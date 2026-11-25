@@ -1707,8 +1707,8 @@ ASSETS = {
             'two enormous projection screens hang side by side on the dark '
             'far wall, both screens filled with a soft cyan radar glow and '
             'orbit track lines but no readable writing of any kind, '
-            'a plain circular blue and red agency emblem decal centred '
-            'between the two screens, dim and unlit, '
+            'the wall between the two screens is bare dark painted metal '
+            'with no marking of any kind on it, '
             'rows of desk consoles stepping down toward the screens with '
             'small amber and cyan indicator lamps, empty swivel chairs, '
             'one or two flight controllers seated far away and seen only as '
@@ -1718,7 +1718,9 @@ ASSETS = {
         ),
         'note': 'Giai đoạn 2: phòng điều khiển DSN ban đêm, lớp nền màn bắt sóng',
         'kind': 'p2scene',
-        'style': P2_SCENE_STYLE_CREW,
+        'style': P2_SCENE_STYLE_CREW + ', absolutely no emblem, no badge, no '
+                 'round logo, no circular insignia, no flag, no agency mark '
+                 'anywhere on walls, screens, chairs or uniforms',
         'size': '1600x900',
     },
     'p2-assembly-bay': {
@@ -2354,6 +2356,7 @@ ASSETS = {
         'style': BEACON_STYLE_CREW,
         'size': '1600x900',
     },
+
 }
 
 
