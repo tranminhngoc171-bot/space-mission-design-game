@@ -58,6 +58,7 @@ space-mission-design-game/
 ├── data/                       # Dữ liệu tham chiếu sứ mệnh
 ├── docs/                       # Tài liệu thiết kế, công thức cân bằng, nguồn trích dẫn NASA & storyboard
 └── scripts/                    # Bộ test tự động (Node.js) kiểm tra dữ liệu và engine vật lý
+```
 
 Dữ Liệu Khoa Học
 Các hằng số vật lý và thông số kỹ thuật được trích từ tài liệu công khai của NASA; những tham số nhóm tự ước tính để cân bằng gameplay đều được gắn nhãn rõ ràng.
