@@ -693,7 +693,17 @@
   padding: clamp(14px, 1.5vw, 20px);
   border: 1px solid var(--line);
   border-radius: var(--cml1-radius);
-  background: linear-gradient(170deg, var(--bg-panel), var(--bg-deep));
+  /* Nen the ba tram: anh luoi toa do DSN lam watermark chinh, phu
+     gradient 90-92% nen chu van doc ro nhu cu. */
+  background-color: var(--bg-deep);
+  background-image:
+    linear-gradient(170deg,
+      color-mix(in srgb, var(--bg-panel) 92%, transparent),
+      color-mix(in srgb, var(--bg-deep) 90%, transparent)),
+    url('./assets/p2-dsn-map.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
 
 .cml1-st-list {

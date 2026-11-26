@@ -26,7 +26,7 @@
   box-sizing: border-box;
   width: 100%;
   padding: var(--st-gap-md);
-  background: var(--bg-deep);
+    background: var(--bg-deep);
   border: 1px solid var(--line);
   border-radius: var(--st-radius-lg);
   color: var(--tx);
@@ -1450,4 +1450,20 @@ html.motion-off .cm4-meter,
 html.motion-off .cm4-meter-fill,
 html.motion-off .cm4-log-item {
   transition: none !important;
+}
+
+
+/* Anh nen buoc kiem duyet: dat tren chinh khung buoc chu khong dat tren
+   .cm4, vi khi bang dong ho an vao thi app gan p2-dup-hidden va rule
+   .cm4.p2-dup-hidden co y dat background: transparent de khong phu anh
+   san khau. Dat o day thi anh luon hien, con .cm4 van trong suot nhu cu. */
+.p2-step-host:has(.cm4) {
+  background-image:
+    linear-gradient(to bottom,
+      color-mix(in srgb, var(--bg-deep) 88%, transparent),
+      var(--bg-deep)),
+    url('./assets/p2-launch-pad.svg');
+  background-position: center top, center top;
+  background-repeat: no-repeat, no-repeat;
+  background-size: cover, cover;
 }
