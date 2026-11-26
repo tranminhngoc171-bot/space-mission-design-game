@@ -1,0 +1,95 @@
+{
+  "naming": "<role>.webp",
+  "assets": {
+    "abort": {
+      "file": "phase2/assets/ui/abort.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 5890
+    },
+    "confirm": {
+      "file": "phase2/assets/ui/confirm.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 5868
+    },
+    "launch": {
+      "file": "phase2/assets/ui/launch.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 5902
+    },
+    "radar": {
+      "file": "phase2/assets/ui/radar.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 5776
+    },
+    "reset": {
+      "file": "phase2/assets/ui/reset.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 6106
+    },
+    "telemetry": {
+      "file": "phase2/assets/ui/telemetry.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 5572
+    },
+    "chip": {
+      "file": "phase2/assets/ui/chip.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 8832
+    },
+    "orbit": {
+      "file": "phase2/assets/ui/orbit.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 6076
+    },
+    "parachute": {
+      "file": "phase2/assets/ui/parachute.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 13258
+    },
+    "seal": {
+      "file": "phase2/assets/ui/seal.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 8126
+    },
+    "signal": {
+      "file": "phase2/assets/ui/signal.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 7752
+    },
+    "thruster": {
+      "file": "phase2/assets/ui/thruster.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 5312
+    },
+    "velocity": {
+      "file": "phase2/assets/ui/velocity.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 4268
+    },
+    "warning": {
+      "file": "phase2/assets/ui/warning.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 3650
+    },
+    "mars-verdict": {
+      "file": "phase2/assets/ui/mars-verdict.webp",
+      "w": 256,
+      "h": 256,
+      "bytes": 15604
+    }
+  }
+}
