@@ -566,7 +566,7 @@
 
 .exv-btn.is-primary:hover,
 .exv-btn.is-primary:focus-visible {
-  background: color-mix(in srgb, var(--amber) 86%, white);
+  background: color-mix(in srgb, var(--amber) 86%, var(--tx-bright));
 }
 
 .exv-btn.is-primary em {
