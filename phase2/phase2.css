@@ -1515,7 +1515,15 @@ html.motion-off .p2-step-dot {
   }
   .p2-statusbar {
     justify-content: flex-start;
-    overflow: visible;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  .p2-stat:nth-child(2) {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .p2-stat:nth-child(3) { display: none; }
   /* Chip DSN cũng đã có trong badge "DSN" ngay dưới tiêu đề. Ở 390px
